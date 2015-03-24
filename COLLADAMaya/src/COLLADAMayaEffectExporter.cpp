@@ -380,6 +380,22 @@ namespace COLLADAMaya
             effectProfile->setReflectivity ( reflectFn.reflectivity(), animated );
         }
 
+		// Metalness
+		MString metalness;
+		DagHelper::getPlugValue(shader, ATTR_METALNESS, metalness);
+		if (metalness != EMPTY_CSTRING)
+		{
+			exportTexturedParameter(effectId, effectProfile, shader, ATTR_METALNESS, EffectExporter::METALNESS, nextTextureIndex, false, true);
+		}
+
+		// Glossiness
+		MString glossiness;
+		DagHelper::getPlugValue(shader, ATTR_GLOSSINESS, glossiness);
+		if (glossiness != EMPTY_CSTRING)
+		{
+			exportTexturedParameter(effectId, effectProfile, shader, ATTR_GLOSSINESS, EffectExporter::GLOSSINESS, nextTextureIndex, false, true);
+		}
+
         // Index of refraction
         bool refractive;
         DagHelper::getPlugValue ( shader, ATTR_REFRACTIONS, refractive );
@@ -431,112 +447,170 @@ namespace COLLADAMaya
         const char* attributeName,
         EffectExporter::Channel channel,
         int& nextTextureIndex,
-        bool animated )
-    {
+        bool animated,
+		bool custom)
+		{
+
+		// Retrieve all the file textures with the blend modes, if exist.
+		MObjectArray fileTextures;
+
         // Find any textures connected to a material attribute and create the associated texture elements.
+		if (!custom)
+		{
+			//// Retrieve all the file textures with the blend modes, if exist.
+			//MObjectArray fileTextures;
+			MIntArray blendModes;
+			getShaderTextures(node, attributeName, fileTextures, blendModes);
 
-        // Retrieve all the file textures with the blend modes, if exist.
-        MObjectArray fileTextures;
-        MIntArray blendModes;
-        getShaderTextures ( node, attributeName, fileTextures, blendModes );
+			// What the hell??? Collada tells me, that there can be only
+			// one texture for every related shader element!!!
+			uint fileTextureCount = fileTextures.length();
+			for (uint i = 0; i < fileTextureCount; ++i)
+			{
+				// Verify that the texture is linked to a filename: COLLADA doesn't like empty file texture nodes.
+				MFnDependencyNode nodeFn(fileTextures[i]);
+				MPlug filenamePlug = nodeFn.findPlug(ATTR_FILE_TEXTURE_NAME);
+				MString filename;
+				filenamePlug.getValue(filename);
+				if (filename.length() == 0) continue;
 
-        // What the hell??? Collada tells me, that there can be only
-        // one texture for every related shader element!!!
-        uint fileTextureCount = fileTextures.length();
-        for ( uint i = 0; i < fileTextureCount; ++i )
-        {
-            // Verify that the texture is linked to a filename: COLLADA doesn't like empty file texture nodes.
-            MFnDependencyNode nodeFn ( fileTextures[i] );
-            MPlug filenamePlug = nodeFn.findPlug ( ATTR_FILE_TEXTURE_NAME );
-            MString filename;
-            filenamePlug.getValue ( filename );
-            if ( filename.length() == 0 ) continue;
+				// Create the texture linking object.
+				MObject fileTexture = fileTextures[i];
+				int blendMode = blendModes[i];
+				String channelSemantic = TEXCOORD_BASE + COLLADASW::Utils::toString(nextTextureIndex);
 
-            // Create the texture linking object.
-            MObject fileTexture = fileTextures[i];
-            int blendMode = blendModes[i];
-            String channelSemantic = TEXCOORD_BASE + COLLADASW::Utils::toString ( nextTextureIndex );
+				// Get the animation target path
+				String targetPath = effectId + "/" + effectProfile->getTechniqueSid() + "/";
 
-            // Get the animation target path
-            String targetPath = effectId + "/" + effectProfile->getTechniqueSid() + "/";
+				// Create the texture element.
+				COLLADASW::Texture colladaTexture;
 
-            // Create the texture element.
-            COLLADASW::Texture colladaTexture;
+				// TODO
+				//             // Extra tag preservation
+				//             String secondKey = COLLADAFW::ExtraKeys::TEXTURE; secondKey.append ( "_" );
+				//             size_t index = getShaderParameterTypeByChannel ( channel );
+				//             secondKey.append ( COLLADABU::Utils::toString ( index ) );
+				//             mDocumentExporter->exportExtraData ( node, COLLADAFW::ExtraKeys::TEXTURE, secondKey.c_str (), &colladaTexture );
 
-            // TODO
-//             // Extra tag preservation
-//             String secondKey = COLLADAFW::ExtraKeys::TEXTURE; secondKey.append ( "_" );
-//             size_t index = getShaderParameterTypeByChannel ( channel );
-//             secondKey.append ( COLLADABU::Utils::toString ( index ) );
-//             mDocumentExporter->exportExtraData ( node, COLLADAFW::ExtraKeys::TEXTURE, secondKey.c_str (), &colladaTexture );
+				// Export the data of the texture.
+				mTextureExporter.exportTexture(&colladaTexture,
+					channelSemantic,
+					fileTextures[i],
+					blendModes[i],
+					targetPath);
+				nextTextureIndex++;
 
-            // Export the data of the texture.
-            mTextureExporter.exportTexture ( &colladaTexture,
-                                             channelSemantic,
-                                             fileTextures[i],
-                                             blendModes[i],
-                                             targetPath );
-            nextTextureIndex++;
+				// Special case for bump maps: export the bump height in the "amount" texture parameter.
+				// Exists currently within the ColladaMax profile.
+				if (channel == EffectExporter::BUMP)
+				{
+					MObject bumpNode = DagHelper::getNodeConnectedTo(node, attributeName);
+					if (!bumpNode.isNull() && (bumpNode.hasFn(MFn::kBump) || bumpNode.hasFn(MFn::kBump3d)))
+					{
+						// Get the animation exporter
+						AnimationExporter* animationExporter = mDocumentExporter->getAnimationExporter();
 
-            // Special case for bump maps: export the bump height in the "amount" texture parameter.
-            // Exists currently within the ColladaMax profile.
-            if ( channel == EffectExporter::BUMP )
-            {
-                MObject bumpNode = DagHelper::getNodeConnectedTo ( node, attributeName );
-                if ( !bumpNode.isNull() && ( bumpNode.hasFn ( MFn::kBump ) || bumpNode.hasFn ( MFn::kBump3d ) ) )
-                {
-                    // Get the animation exporter
-                    AnimationExporter* animationExporter = mDocumentExporter->getAnimationExporter();
+						// The target id for the animation
+						String targetSid = targetPath + MAX_AMOUNT_TEXTURE_PARAMETER;
+						bool animated = animationExporter->addNodeAnimation(bumpNode, targetSid, ATTR_BUMP_DEPTH, kSingle);
 
-                    // The target id for the animation
-                    String targetSid = targetPath + MAX_AMOUNT_TEXTURE_PARAMETER;
-                    bool animated = animationExporter->addNodeAnimation ( bumpNode, targetSid, ATTR_BUMP_DEPTH, kSingle );
+						float amount = 1.0f;
+						MFnDependencyNode(bumpNode).findPlug(ATTR_BUMP_DEPTH).getValue(amount);
+						String paramSid = EMPTY_STRING; if (animated) paramSid = MAX_AMOUNT_TEXTURE_PARAMETER;
+						colladaTexture.addExtraTechniqueParameter(PROFILE_MAX, MAX_AMOUNT_TEXTURE_PARAMETER, amount, paramSid);
 
-                    float amount = 1.0f;
-                    MFnDependencyNode ( bumpNode ).findPlug ( ATTR_BUMP_DEPTH ).getValue ( amount );
-                    String paramSid = EMPTY_STRING; if ( animated ) paramSid = MAX_AMOUNT_TEXTURE_PARAMETER;
-                    colladaTexture.addExtraTechniqueParameter ( PROFILE_MAX, MAX_AMOUNT_TEXTURE_PARAMETER, amount, paramSid );
+						int interp = 0;
+						MFnDependencyNode(bumpNode).findPlug(ATTR_BUMP_INTERP).getValue(interp);
+						colladaTexture.addExtraTechniqueParameter(PROFILE_MAX, MAX_BUMP_INTERP_TEXTURE_PARAMETER, interp);
+					}
+				}
 
-                    int interp = 0;
-                    MFnDependencyNode ( bumpNode ).findPlug ( ATTR_BUMP_INTERP ).getValue ( interp );
-                    colladaTexture.addExtraTechniqueParameter ( PROFILE_MAX, MAX_BUMP_INTERP_TEXTURE_PARAMETER, interp );
-                }
-            }
+				// Change the color values to textures
+				switch (channel)
+				{
+					case AMBIENT:
+						effectProfile->setAmbient(COLLADASW::ColorOrTexture(colladaTexture), animated);
+						break;
+					case BUMP:
+					{
+								 // Set the profile name and the child element name to the texture.
+								 // Then we can add it as the extra technique texture.
+								 colladaTexture.setProfileName(PROFILE_MAYA);
+								 colladaTexture.setChildElementName(MAYA_BUMP_PARAMETER);
+								 effectProfile->addExtraTechniqueColorOrTexture(COLLADASW::ColorOrTexture(colladaTexture), COLLADASW::EffectProfile::StringPairList(), MAYA_BUMP_PARAMETER);
+								 break;
+					}
+					case DIFFUSE:
+						effectProfile->setDiffuse(COLLADASW::ColorOrTexture(colladaTexture), animated);
+						break;
+					case EMISSION:
+						effectProfile->setEmission(COLLADASW::ColorOrTexture(colladaTexture), animated);
+						break;
+					case REFLECTION:
+						effectProfile->setReflective(COLLADASW::ColorOrTexture(colladaTexture), animated);
+						break;
+					case SPECULAR:
+						effectProfile->setSpecular(COLLADASW::ColorOrTexture(colladaTexture), animated);
+						break;
+					case TRANSPARENt:
+						effectProfile->setTransparent(COLLADASW::ColorOrTexture(colladaTexture), animated);
+						break;
+					default:
+						break;
+				}
+			}
+		}
+		else
+		{
+			String channelSemantic = TEXCOORD_BASE + COLLADASW::Utils::toString(nextTextureIndex);
 
-            // Change the color values to textures
-            switch ( channel )
-            {
-            case AMBIENT:
-                effectProfile->setAmbient ( COLLADASW::ColorOrTexture ( colladaTexture ), animated );
-                break;
-            case BUMP:
-            {
-                // Set the profile name and the child element name to the texture.
-                // Then we can add it as the extra technique texture.
-                colladaTexture.setProfileName( PROFILE_MAYA );
-                colladaTexture.setChildElementName( MAYA_BUMP_PARAMETER );
-				effectProfile->addExtraTechniqueColorOrTexture( COLLADASW::ColorOrTexture ( colladaTexture ), COLLADASW::EffectProfile::StringPairList(), MAYA_BUMP_PARAMETER );
-                break;
-            }
-            case DIFFUSE:
-                effectProfile->setDiffuse ( COLLADASW::ColorOrTexture ( colladaTexture ), animated );
-                break;
-            case EMISSION:
-                effectProfile->setEmission ( COLLADASW::ColorOrTexture ( colladaTexture ), animated );
-                break;
-            case REFLECTION:
-                effectProfile->setReflective ( COLLADASW::ColorOrTexture ( colladaTexture ), animated );
-                break;
-            case SPECULAR:
-                effectProfile->setSpecular ( COLLADASW::ColorOrTexture ( colladaTexture ), animated );
-                break;
-            case TRANSPARENt:
-                effectProfile->setTransparent ( COLLADASW::ColorOrTexture ( colladaTexture ), animated );
-                break;
-            default:
-                break;
-            }
-        }
+			// Get the animation target path
+			String targetPath = effectId + "/" + effectProfile->getTechniqueSid() + "/";
+
+			// Create the texture element.
+			COLLADASW::Texture colladaTexture;
+
+			// TODO
+			//             // Extra tag preservation
+			//             String secondKey = COLLADAFW::ExtraKeys::TEXTURE; secondKey.append ( "_" );
+			//             size_t index = getShaderParameterTypeByChannel ( channel );
+			//             secondKey.append ( COLLADABU::Utils::toString ( index ) );
+			//             mDocumentExporter->exportExtraData ( node, COLLADAFW::ExtraKeys::TEXTURE, secondKey.c_str (), &colladaTexture );
+
+			MString fileName;
+			DagHelper::getPlugValue(node, attributeName, fileName);
+
+			mTextureExporter.currentMayaFileName = fileName;
+			mTextureExporter.currentMayaImageId = attributeName;
+			mTextureExporter.currentColladaImageId = mTextureExporter.currentMayaImageId;
+
+
+			// Export the data of the texture.
+			mTextureExporter.exportTexture(&colladaTexture,
+				channelSemantic,
+				MObject::kNullObj,
+				0,
+				targetPath);
+
+			switch (channel)
+			{
+				case EffectExporter::METALNESS:
+					// Set the profile name and the child element name to the texture.
+					// Then we can add it as the extra technique texture.
+					colladaTexture.setProfileName("Fl4re");
+					colladaTexture.setChildElementName(MAYA_METALNESS_PARAMETER);
+					effectProfile->addExtraTechniqueColorOrTexture(COLLADASW::ColorOrTexture(colladaTexture), COLLADASW::EffectProfile::StringPairList(), MAYA_METALNESS_PARAMETER);
+					break;
+			
+				case EffectExporter::GLOSSINESS:
+					// Set the profile name and the child element name to the texture.
+					// Then we can add it as the extra technique texture.
+					colladaTexture.setProfileName("Fl4re");
+					colladaTexture.setChildElementName(MAYA_GLOSSINESS_PARAMETER);
+					effectProfile->addExtraTechniqueColorOrTexture(COLLADASW::ColorOrTexture(colladaTexture), COLLADASW::EffectProfile::StringPairList(), MAYA_GLOSSINESS_PARAMETER);
+					break;
+			}
+		}
 
         return ( fileTextures.length() > 0 ) ? fileTextures[0] : MObject::kNullObj;
     }

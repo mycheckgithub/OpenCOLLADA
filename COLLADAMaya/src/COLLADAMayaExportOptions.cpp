@@ -18,6 +18,9 @@
 #include "COLLADAMayaSetHelper.h"
 #include "COLLADAMayaAnimationHelper.h"
 
+
+#include <maya/MItDependencyNodes.h>
+
 namespace COLLADAMaya
 {
 
@@ -151,6 +154,27 @@ namespace COLLADAMaya
                 else if ( optionName == "dereferenceXRefs" ) mDereferenceXRefs = value;
             }
         }
+
+
+		if (mBakeTransforms)
+		{
+			mIsSampling = true;
+			//// iterate over all nodes of the specified type
+			//MItDependencyNodes it(MFn::kBase);
+			//while (!it.isDone())
+			//{
+			//	// get the object the iterator is referencing
+			//	MObject obj = it.item();
+
+			//	// select the node
+			//	MGlobal::select(obj, MGlobal::kAddToList);
+
+			//	// move to next item
+			//	it.next();
+			//}
+		}
+	
+
 
         if ( !mIsSampling )
         {

@@ -129,6 +129,8 @@ namespace COLLADAMaya
             SHININESS, /**< The texels will modify the specular shininess of the pixel. */
             SPECULAR, // ATTR_SPECULAR_COLOR /**< The texels will be modulated with the specular light colors. */
             TRANSPARENt, /**< The texels will be modify the final color alpha. */
+			METALNESS,
+			GLOSSINESS,
             UNKNOWN, /**< An unknown texture channel. */
             DEFAULT = DIFFUSE
         };
@@ -184,7 +186,8 @@ namespace COLLADAMaya
             const char* attributeName, 
             EffectExporter::Channel channel, 
             int& nextTextureIndex, 
-            bool animated = false );
+            bool animated = false,
+			bool custom = false);
 
         /**
         * Retrieve any texture (file or layered) associated with a material attribute.

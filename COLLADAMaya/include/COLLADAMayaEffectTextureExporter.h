@@ -152,6 +152,13 @@ namespace COLLADAMaya
         */
         COLLADAMaya::StringToStringMap& getMayaIdColladaImageId () { return mMayaIdColladaImageId; }
 
+	public:
+
+		/* Custom Material*/
+		MString currentMayaFileName;
+		String currentMayaImageId;
+		String currentColladaImageId;
+
     private:
 
         /** Returns the tolerance value for double value comparison. */

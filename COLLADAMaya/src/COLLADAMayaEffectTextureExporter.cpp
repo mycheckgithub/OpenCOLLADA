@@ -168,44 +168,53 @@ namespace COLLADAMaya
     //---------------------------------------------------------------
     String EffectTextureExporter::exportImage ( const MObject &texture )
     {
-        // Retrieve the texture filename
-        MFnDependencyNode textureNode ( texture );
-        MString mayaName = textureNode.name();
-        MPlug filenamePlug = textureNode.findPlug ( ATTR_FILE_TEXTURE_NAME );
+        
+		MFnDependencyNode textureNode(texture);
 
-        // Get the maya image id.
-        String mayaImageId = DocumentExporter::mayaNameToColladaName ( textureNode.name() );
+		if (!texture.isNull())
+		{
+			// Retrieve the texture filename
+			//MFnDependencyNode textureNode(texture);
+			MString mayaName = textureNode.name();
+			MPlug filenamePlug = textureNode.findPlug(ATTR_FILE_TEXTURE_NAME);
 
-        // Generate a COLLADA id for the new light object
-        String colladaImageId;
+			// Get the maya filename with the path to the file.
+			filenamePlug.getValue(currentMayaFileName);
 
-        // Check if there is an extra attribute "colladaId" and use this as export id.
-        MString attributeValue;
-        DagHelper::getPlugValue ( texture, COLLADA_ID_ATTRIBUTE_NAME, attributeValue );
-        if ( attributeValue != EMPTY_CSTRING )
-        {
-            // Generate a valid collada name, if necessary.
-            colladaImageId = mDocumentExporter->mayaNameToColladaName ( attributeValue, false );
-        }
-        else
-        {
-            // Generate a COLLADA id for the new light object
-            colladaImageId = DocumentExporter::mayaNameToColladaName ( textureNode.name() );
-        }
-        // Make the id unique and store it in a map for refernences.
-        colladaImageId = mImageIdList.addId ( colladaImageId );
-        mMayaIdColladaImageId [mayaImageId] = colladaImageId;
+			// Get the maya image id.
+			/*String*/ currentMayaImageId = DocumentExporter::mayaNameToColladaName(textureNode.name());
 
-        // Get the maya filename with the path to the file.
-        MString mayaFileName;
-        filenamePlug.getValue ( mayaFileName );
-        if ( mayaFileName.length () == 0 ) return NULL;
-        String sourceFile = mayaFileName.asChar ();
+			// Generate a COLLADA id for the new light object
+			/*String colladaImageId;*/
+
+			// Check if there is an extra attribute "colladaId" and use this as export id.
+			MString attributeValue;
+			DagHelper::getPlugValue(texture, COLLADA_ID_ATTRIBUTE_NAME, attributeValue);
+			if (attributeValue != EMPTY_CSTRING)
+			{
+				// Generate a valid collada name, if necessary.
+				currentColladaImageId = mDocumentExporter->mayaNameToColladaName(attributeValue, false);
+			}
+			else
+			{
+				// Generate a COLLADA id for the new light object
+				currentColladaImageId = DocumentExporter::mayaNameToColladaName(textureNode.name());
+			}
+		}
+		
+		// Make the id unique and store it in a map for refernences.
+        currentColladaImageId = mImageIdList.addId ( currentColladaImageId );
+        mMayaIdColladaImageId [currentMayaImageId] = currentColladaImageId;
+
+
+
+        if ( currentMayaFileName.length () == 0 ) return NULL;
+        String sourceFile = currentMayaFileName.asChar ();
         COLLADASW::URI sourceFileUri ( COLLADASW::URI::nativePathToUri ( sourceFile ) );
         if ( sourceFileUri.getScheme ().empty () )
             sourceFileUri.setScheme ( COLLADASW::URI::SCHEME_FILE );
 
-        COLLADASW::Image* colladaImage = exportImage ( mayaImageId, colladaImageId, sourceFileUri );
+        COLLADASW::Image* colladaImage = exportImage ( currentMayaImageId, currentColladaImageId, sourceFileUri );
         if ( colladaImage == NULL ) return NULL;
 
         // Export the node type, because PSD textures don't behave the same as File textures.

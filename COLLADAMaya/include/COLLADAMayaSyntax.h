@@ -136,6 +136,8 @@ namespace COLLADAMaya
     static const char* MAYA_STARTTIME_PARAMETER                     = "start_time";
     static const char* MAYA_SEGMENTSCALECOMP_PARAMETER              = "segment_scale_compensate";
     static const char* MAYA_BUMP_PARAMETER                          = "bump";
+	static const char* MAYA_METALNESS_PARAMETER						= "metalness";
+	static const char* MAYA_GLOSSINESS_PARAMETER					= "glossiness";
 
     /** Parameters for the animation exports. */
     static const String EMPTY_PARAMETER[1]                          = { "" };
@@ -253,6 +255,8 @@ namespace COLLADAMaya
     static const char* ATTR_PROJECTION_TYPE                         = "projType";
     static const char* ATTR_REFLECTIVITY                            = "reflectivity";
     static const char* ATTR_REFLECTED_COLOR                         = "reflectedColor";
+	static const char* ATTR_METALNESS								= "metalness";
+	static const char* ATTR_GLOSSINESS								= "glossiness";
     static const char* ATTR_REFRACTIONS                             = "refractions";
     static const char* ATTR_REFRACTIVE_INDEX                        = "refractiveIndex";
     static const char* ATTR_ROTATE                                  = "rotate";

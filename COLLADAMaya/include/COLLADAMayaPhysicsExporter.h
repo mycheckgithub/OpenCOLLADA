@@ -100,17 +100,27 @@ namespace COLLADAMaya
 
         const DaeToIRBMap& getInstanceRigidBodies() { return mInstanceRigidBodies; }
 
+		static std::vector<String>& getRB_Constraint() { return rigidConstraintVector; }
+
+		static std::vector<String> rigidConstraintVector;
+
 		/** Returns if the node is a solver bullet node. */
 		bool isBulletRigidBodySolverNode(MDagPath& dagPath);
 		
 		/** Returns if the node is a rigid bullet node. */
 		bool isBulletRigidBodyNode(MDagPath& dagPath);
+
+		/** Returns if the node is a rigid constraint node. */
+		bool isBulletRigidConstraintNode(MDagPath& dagPath);
 		
 		/** Gravity field vector. */
 		static MVector gravityField;
 
 		/** Returns the gravity field from the solver bullet node. */
 		void getGravityField();
+
+		/** Returns the rigidConstraint bullet nodes. */
+		void getRigidConstraintNodes();
 
     private:
 
@@ -136,7 +146,10 @@ namespace COLLADAMaya
         /** Exports all physics data of the current mesh. */
         bool exportPhysicsModel(SceneElement* sceneElement);
 
-		void createShape(MDagPath& childDagPath, MTransformationMatrix mPhysicsShapeTransformMatrix, MTransformationMatrix mGraphicShapeTransformMatrix);
+		bool exportPhysicRigidBody(MDagPath& dagPath);
+		bool exportPhysicRigidConstraints(MDagPath& dagPath);
+
+		void createShape(MDagPath& childDagPath);
 
 		void UpdateSceneElement(MObject& child, bool result, bool needExport);
 

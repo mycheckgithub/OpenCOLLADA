@@ -316,12 +316,17 @@ namespace COLLADAMaya
     static const char* AGEIA_PHYSIKS_MODEL                          = "AgeiaPhysicsModel";
 	static const char* BULLET_PHYSIKS_NODE							= "bulletRigidBodyShape";
 	static const char* BULLET_PHYSIKS_SOLVER_NODE					= "bulletSolverShape";
-	static const char* PHYSICS_MODEL_ID								= "PhysicsModel";
-	static const char* PHYSICS_WORLD_REFERENCE						= "world";
+	static const char* BULLET_PHYSIKS_CONSTRAINT_NODE				= "bulletRigidBodyConstraintShape";
+	static const char* PHYSIC_MODEL_ID								= "PhysicModel";
+	static const char* PHYSIC_WORLD_REFERENCE						= "world";
 	static const char* ATTR_MASS									= "mass";
 	static const char* ATTR_BODY_TYPE								= "bodyType";
 	static const char* ATTR_DYNAMIC									= "dynamic";
 	static const char* ATTR_INERTIA									= "inertia";
+	static const char* ATTR_CONSTRAINT_TYPE							= "constraintType";
+	static const char* ATTR_USE_REFERENCE_FRAME						= "useReferenceFrame";
+	static const char* ATTR_RIGIDBODY_A								= "rigidBodyA";
+	static const char* ATTR_RIGIDBODY_B								= "rigidBodyB";
 	static const char* ATTR_EXTENT									= "extent";
 	
 	static const char* ATTR_ACTIVE									= "active";

@@ -22,6 +22,80 @@ namespace COLLADASW
     {}
 
 
+
+	/* Constraint RB*/
+	void LibraryPhysicsModels::openRigidConstraint(const String & rbSId, const String & rbName)
+	{
+		mCurrentRigidConstraintCloser = mSW->openElement(CSWC::CSW_ELEMENT_RIGID_CONSTRAINT);
+
+		if (!rbSId.empty())
+			mSW->appendAttribute(CSWC::CSW_ATTRIBUTE_SID, rbSId);
+
+		if (!rbName.empty())
+			mSW->appendAttribute(CSWC::CSW_ATTRIBUTE_NAME, rbName);
+	}
+
+	
+	void LibraryPhysicsModels::openRefAttachment(const String & rbName)
+	{
+		mCurrentRefAttachmentCloser = mSW->openElement(CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_REF_ATTACHMENT);
+		
+		if (!rbName.empty())
+			mSW->appendAttribute(CSWC::CSW_ATTRIBUTE_RIGID_BODY, String("#") + rbName);
+		else
+			mSW->appendAttribute(CSWC::CSW_ATTRIBUTE_RIGID_BODY, "NULL");
+	}
+
+	void LibraryPhysicsModels::closeRefAttachment()
+	{
+		mCurrentRefAttachmentCloser.close();
+	}
+
+	void LibraryPhysicsModels::openAttachment(const String & rbName)
+	{
+		mCurrentAttachmentCloser = mSW->openElement(CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_ATTACHMENT);
+
+		if (!rbName.empty())
+			mSW->appendAttribute(CSWC::CSW_ATTRIBUTE_RIGID_BODY, String("#") + rbName);
+		else
+			mSW->appendAttribute(CSWC::CSW_ATTRIBUTE_RIGID_BODY, "NULL");
+	}
+
+	void LibraryPhysicsModels::closeAttachment()
+	{
+		mCurrentAttachmentCloser.close();
+	}
+	
+
+	void LibraryPhysicsModels::openLimits()
+	{
+		mCurrentLimitCloser = mSW->openElement(CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_LIMITS);
+	}
+
+	void LibraryPhysicsModels::closeLimits()
+	{
+		mCurrentLimitCloser.close();
+	}
+
+	void LibraryPhysicsModels::AddSwingAndTwistLimit(float xMin, float yMin, float zMin, float xMax, float yMax, float zMax)
+	{
+		mSW->openElement(CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_SWING_TWIST);
+		
+		mSW->openElement(CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_SWING_TWIST_MIN);
+		mSW->appendAttribute(CSWC::CSW_ATTRIBUTE_SID, "swing_min");
+		mSW->appendValues(xMin, yMin, zMin);
+		mSW->closeElement();
+		
+		mSW->openElement(CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_SWING_TWIST_MAX);
+		mSW->appendAttribute(CSWC::CSW_ATTRIBUTE_SID, "swing_max");
+		mSW->appendValues(xMax, yMax, zMax);
+		mSW->closeElement();
+
+		mSW->closeElement();
+	}
+	/* Constraint RB*/
+
+
 	void LibraryPhysicsModels::openRigidBody(const String & rbSId, const String & rbName)
 	{
 		mCurrentRigidBodyCloser = mSW->openElement(CSWC::CSW_ELEMENT_RIGID_BODY);
@@ -137,6 +211,11 @@ namespace COLLADASW
 	void LibraryPhysicsModels::closeRigidBody()
 	{
 		mCurrentRigidBodyCloser.close();
+	}
+
+	void LibraryPhysicsModels::closeRigidConstraint()
+	{
+		mCurrentRigidConstraintCloser.close();
 	}
 
     //---------------------------------------------------------------

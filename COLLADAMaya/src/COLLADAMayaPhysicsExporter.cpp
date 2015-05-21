@@ -443,6 +443,16 @@ namespace COLLADAMaya
 		return (shaderNodeTypeName == BULLET_PHYSIKS_SOLVER_NODE);
 	}
 
+	bool PhysicsExporter::isBulletRigidConstraintNode(MDagPath& dagPath)
+	{
+		MStatus status;
+		MObject node(dagPath.node());
+		MFnDependencyNode shaderNode(node, &status);
+		MString shaderNodeTypeName(shaderNode.typeName());
+
+		return (shaderNodeTypeName == BULLET_PHYSIKS_CONSTRAINT_NODE);
+	}
+
 
 	bool PhysicsExporter::isBulletRigidBodyNode(MDagPath& dagPath)
 	{
@@ -480,6 +490,134 @@ namespace COLLADAMaya
 
 			it.next();
 		}
+	}
+	
+	void PhysicsExporter::getRigidConstraintNodes()
+	{
+		MItDag it(MItDag::kDepthFirst);
+
+		while (!it.isDone())
+		{
+			MFnDagNode fn(it.item());
+
+			MDagPath DagPath = MDagPath::getAPathTo(it.item());
+			if (isBulletRigidConstraintNode(DagPath))
+			{
+				const String& colladaRBConstraintId = generateColladaMeshId(DagPath);
+
+				int type;
+				DagHelper::getPlugValue(DagPath.node(), ATTR_CONSTRAINT_TYPE, type);
+
+				int ref;
+				DagHelper::getPlugValue(DagPath.node(), ATTR_USE_REFERENCE_FRAME, ref);
+
+				MObject ObjA;
+				MStatus status;
+				MPlug plug = MFnDependencyNode(DagPath.node()).findPlug(ATTR_RIGIDBODY_A, &status);
+				if (status == MStatus::kSuccess)
+					plug.getValue(ObjA);
+
+				const String& colladaMeshId = generateColladaMeshId(MDagPath::getAPathTo(ObjA));
+
+				MString name2;
+				String name = ObjA.apiTypeStr();
+				MFn::Type type1 = ObjA.apiType();
+				MTypeId type2;
+
+				if (ObjA.hasFn(MFn::kPluginData))
+				{
+					MFnPluginData dataPlugin(ObjA, &status);
+					MPxLocatorNode* bullet = (MPxLocatorNode*) (dataPlugin.data(&status));
+					MFnDependencyNode BulletNode(ObjA, &status);
+				}
+				
+				
+				
+				
+				MObject ObjB;
+				MStatus status1;
+				plug = MFnDependencyNode(DagPath.node()).findPlug(ATTR_RIGIDBODY_B, &status1);
+				if (status1 == MStatus::kSuccess)
+					plug.getValue(ObjB);
+
+				const String& colladaMeshId2 = generateColladaMeshId(MDagPath::getAPathTo(ObjB));
+
+				/*MString RbA;
+				DagHelper::getPlugValue(DagPath.node(), ATTR_RIGIDBODY_A, RbA);
+
+				MString RbB;
+				DagHelper::getPlugValue(DagPath.node(), ATTR_RIGIDBODY_B, RbB);*/
+
+
+				MVector constrainMin;
+				status;
+				plug = MFnDependencyNode(DagPath.node()).findPlug(MString(COLLADASW::CSWC::CSW_ELEMENT_CONSTRAINT_MIN.c_str()), &status);
+				if (status == MStatus::kSuccess)
+				if (plug.isCompound() && plug.numChildren() >= 3)
+				{
+					status = plug.child(0).getValue(constrainMin.x);
+					status = plug.child(1).getValue(constrainMin.y);
+					status = plug.child(2).getValue(constrainMin.z);
+				}
+
+				MVector constrainMax;
+				plug = MFnDependencyNode(DagPath.node()).findPlug(MString(COLLADASW::CSWC::CSW_ELEMENT_CONSTRAINT_MAX.c_str()), &status);
+				if (status == MStatus::kSuccess)
+				if (plug.isCompound() && plug.numChildren() >= 3)
+				{
+					status = plug.child(0).getValue(constrainMax.x);
+					status = plug.child(1).getValue(constrainMax.y);
+					status = plug.child(2).getValue(constrainMax.z);
+				}
+
+
+				exportPhysicRigidConstraints(DagPath);
+
+			}
+
+			it.next();
+		}
+	}
+
+	bool PhysicsExporter::exportPhysicRigidConstraints(MDagPath& dagPath)
+	{
+		openRigidConstraint("sid", "name");
+
+		// Ref Attachment
+		openRefAttachment("name");
+		addTranslate("translate", 0, 0, 0);
+
+		addRotate("rotateX", 0, 0, 0, 0);
+		addRotate("rotateY", 0, 0, 0, 0);
+		addRotate("rotateZ", 0, 0, 0, 0);
+
+		closeRefAttachment();
+
+		// Attachment
+		openAttachment("name");
+		addTranslate("translate", 0, 0, 0);
+
+		addRotate("rotateX", 0, 0, 0, 0);
+		addRotate("rotateY", 0, 0, 0, 0);
+		addRotate("rotateZ", 0, 0, 0, 0);
+
+		closeAttachment();
+
+		openTechniqueCommon();
+
+		openLimits();
+
+		AddSwingAndTwistLimit(0, 0, 0, 0, 0, 0);
+
+		closeLimits();
+
+		closeTechniqueCommon();
+
+		closeRigidConstraint();
+
+		rigidConstraintVector.push_back("name");
+
+		return true;
 	}
 
 	static void searchAndUpdate(SceneElement* sceneElement, MDagPath& ChildPath, bool result, bool needExport)
@@ -529,7 +667,7 @@ namespace COLLADAMaya
 		const String& colladaMeshId = generateColladaRigidBodyId(dagPath, sceneElement->getIsLocal());
 		String meshName = mDocumentExporter->dagPathToColladaName(dagPath);
 
-        // Opens the mesh tag in the collada document
+		// Opens the mesh tag in the collada document
 		MFnDagNode DagNode(dagPath.node());
 		MObject parent = DagNode.parent(0);
 		MFnDagNode fnParent(parent);
@@ -561,16 +699,15 @@ namespace COLLADAMaya
             else if (type == Static)
                 addDynamic(false);
 
+		//Get Mass
+		float mass;
+		MObject node = dagPath.node();
 
-            //Get Mass
-            float mass;
-            MObject node = dagPath.node();
-
-            if (isBulletRigidBodyNode(dagPath))
-            {
-                DagHelper::getPlugValue(node, ATTR_MASS, mass);
-                addMass(mass);
-            }
+		if (isBulletRigidBodyNode(dagPath))
+		{
+			DagHelper::getPlugValue(node, ATTR_MASS, mass);
+			addMass(mass);
+		}
 
 
             //Get Inertia 
@@ -665,7 +802,25 @@ namespace COLLADAMaya
             closeRigidBody();
         }
 
-        return true;
+		return true;
+	}
+
+    // --------------------------------------------------------
+	bool PhysicsExporter::exportPhysicModel(
+		MDagPath& dagPath)
+    {
+		
+		if (firstimeOpenPhysModel)
+		{
+			openPhysicsModel(PHYSIC_MODEL_ID, "");
+			firstimeOpenPhysModel = false;
+		}
+		
+		exportPhysicRigidBody(dagPath);
+
+		getRigidConstraintNodes();// exportPhysicRigidConstraints(dagPath);
+
+		return true;
     }
 
     // --------------------------------------------------

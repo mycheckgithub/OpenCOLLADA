@@ -26,6 +26,7 @@
 
 #include "COLLADASWNode.h"
 #include "COLLADASWInstanceRigidBody.h"
+#include "COLLADASWInstanceRigidConstraint.h"
 #include "COLLADASWLibraryPhysicsScenes.h"
 #include "COLLADASWConstants.h"
 
@@ -65,6 +66,10 @@ namespace COLLADAMaya
 		if (instanceRigidBodies.empty())
 			return false;
 
+		std::vector<String>& constraintVector = PhysicsExporter::getRB_Constraint();
+		std::vector<std::string>::iterator iterRigidConstraint;
+
+
 		// Get the streamWriter from the export document
 		COLLADASW::StreamWriter* streamWriter = mDocumentExporter->getStreamWriter();
 		
@@ -89,6 +94,14 @@ namespace COLLADAMaya
                     instanceRigidBody.closeInstanceRigidBody();
                 }
             }
+
+            for (iterRigidConstraint = constraintVector.begin(); iterRigidConstraint != constraintVector.end(); ++iterRigidConstraint)
+			{
+				// Instance Rigid Constraint
+				COLLADASW::InstanceRigidConstraint instanceRigidConstraint(streamWriter, *iterRigidConstraint);
+				instanceRigidConstraint.openInstanceRigidConstraint();
+				instanceRigidConstraint.closeInstanceRigidConstraint();
+			}
 
             instancePhysicsModel.closeInstancePhysicsModel();
 		}

@@ -144,6 +144,13 @@ namespace COLLADASW
         static const String CSW_ELEMENT_MESH;
 		static const String CSW_ELEMENT_CONVEX_MESH;
 		static const String CSW_ELEMENT_PHYSICS_MODEL;
+		static const String	CSW_ELEMENT_RIGID_CONSTRAINT;
+		static const String	CSW_ELEMENT_RIGID_CONSTRAINT_REF_ATTACHMENT;
+		static const String	CSW_ELEMENT_RIGID_CONSTRAINT_ATTACHMENT;
+		static const String	CSW_ELEMENT_RIGID_CONSTRAINT_LIMITS;
+		static const String CSW_ELEMENT_RIGID_CONSTRAINT_SWING_TWIST;
+		static const String CSW_ELEMENT_RIGID_CONSTRAINT_SWING_TWIST_MIN;
+		static const String CSW_ELEMENT_RIGID_CONSTRAINT_SWING_TWIST_MAX;
 		static const String	CSW_ELEMENT_RIGID_BODY;
 		static const String CSW_ELEMENT_RIGID_BODY_DYNAMIC;
 		static const String CSW_ELEMENT_RIGID_BODY_MASS;
@@ -242,6 +249,8 @@ namespace COLLADASW
         static const String CSW_ELEMENT_ZFAR;
         static const String CSW_ELEMENT_ZNEAR;
 		static const String CSW_ELEMENT_GRAVITY;
+		static const String CSW_ELEMENT_CONSTRAINT_MIN;
+		static const String	CSW_ELEMENT_CONSTRAINT_MAX;
 
 
 		static const String CSW_ATTRIBUTE_CLOSED;
@@ -265,7 +274,8 @@ namespace COLLADASW
         static const String CSW_ATTRIBUTE_REF;
         static const String CSW_ATTRIBUTE_SEMANTIC;
         static const String CSW_ATTRIBUTE_SET;
-        static const String CSW_ATTRIBUTE_SID;
+		static const String CSW_ATTRIBUTE_SID; 
+		static const String CSW_ATTRIBUTE_RIGID_BODY;
         static const String CSW_ATTRIBUTE_SLICE;
         static const String CSW_ATTRIBUTE_SOURCE;
         static const String CSW_ATTRIBUTE_STAGE;
@@ -274,6 +284,7 @@ namespace COLLADASW
         static const String CSW_ATTRIBUTE_SYMBOL;
 		static const String CSW_ATTRIBUTE_BODY;
         static const String CSW_ATTRIBUTE_TARGET;
+		static const String CSW_ATTRIBUTE_CONSTRAINT;
         static const String CSW_ATTRIBUTE_TEXCOORD;
         static const String CSW_ATTRIBUTE_TEXTURE;
         static const String CSW_ATTRIBUTE_TYPE;

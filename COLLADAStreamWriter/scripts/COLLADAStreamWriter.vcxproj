@@ -1166,6 +1166,7 @@
     <ClCompile Include="..\src\COLLADASWInstanceNode.cpp" />
     <ClCompile Include="..\src\COLLADASWInstancePhysicsModel.cpp" />
     <ClCompile Include="..\src\COLLADASWInstanceRigidBody.cpp" />
+    <ClCompile Include="..\src\COLLADASWInstanceRigidConstraint.cpp" />
     <ClCompile Include="..\src\COLLADASWLibrary.cpp" />
     <ClCompile Include="..\src\COLLADASWLibraryAnimationClips.cpp" />
     <ClCompile Include="..\src\COLLADASWLibraryAnimations.cpp" />
@@ -1228,6 +1229,7 @@
     <ClInclude Include="..\include\COLLADASWInstanceNode.h" />
     <ClInclude Include="..\include\COLLADASWInstancePhysicsModel.h" />
     <ClInclude Include="..\include\COLLADASWInstanceRigidBody.h" />
+    <ClInclude Include="..\include\COLLADASWInstanceRigidConstraint.h" />
     <ClInclude Include="..\include\COLLADASWLibrary.h" />
     <ClInclude Include="..\include\COLLADASWLibraryAnimationClips.h" />
     <ClInclude Include="..\include\COLLADASWLibraryAnimations.h" />

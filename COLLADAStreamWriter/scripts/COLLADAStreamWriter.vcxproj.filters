@@ -179,6 +179,9 @@
     <ClCompile Include="..\src\COLLADASWInstancePhysicsModel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\COLLADASWInstanceRigidConstraint.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\COLLADASWAnnotation.h">
@@ -369,7 +372,7 @@
     </ClInclude>
     <ClInclude Include="..\include\COLLADASWTagType.h">
       <Filter>Header Files</Filter>
-	</ClInclude>
+    </ClInclude>
     <ClInclude Include="..\include\COLLADASWLibraryPhysicsModels.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -380,6 +383,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\include\COLLADASWInstancePhysicsModel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\COLLADASWInstanceRigidConstraint.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

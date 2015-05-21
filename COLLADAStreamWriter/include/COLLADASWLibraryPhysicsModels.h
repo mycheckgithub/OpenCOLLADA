@@ -28,10 +28,14 @@ namespace COLLADASW
         TagCloser mCurrentPhysicsModelCloser;  //!< Used to close the current physicsModel
 		TagCloser mCurrentTechniqueCommonCloser;  //!< Used to close the current techniqueCommon
 		TagCloser mCurrentRigidBodyCloser;   //!< Used to close the current rigidBody
+		TagCloser mCurrentRigidConstraintCloser; //!< Used to close the current rigidConstraint
+
+		TagCloser mCurrentRefAttachmentCloser;
+		TagCloser mCurrentAttachmentCloser;
+		TagCloser mCurrentLimitCloser;
 
 		TagCloser mCurrentShapeCloser;
-		//TagCloser mCurrentExtentBoxShapeCloser;
-
+		
     public:
         /** Constructor
         @param streamWriter The stream the @a \<library_physics_models\> and @a \<physics_model\>'s
@@ -43,11 +47,16 @@ namespace COLLADASW
 
     protected:
 
-		/** Adds @a \<rigid_body\> element with the given sId and Name. 
-		@param rbSId The sid of the rigidBody
-		@param rbName The Name of the rigidBody*/
-		//void addRigidBody(const String & rbSId, const String & rbName);
-		
+		void openRigidConstraint(const String & rbSId, const String & rbName);
+		void closeRigidConstraint();
+		void openRefAttachment(const String & rbName);
+		void closeRefAttachment();
+		void openAttachment(const String & rbName);
+		void closeAttachment();
+		void openLimits();
+		void closeLimits();
+		void AddSwingAndTwistLimit(float xMin, float yMin, float zMin, float xMax, float yMax, float zMax);
+
 		void openRigidBody(const String & rbSId, const String & rbName);
 		void closeRigidBody();
 

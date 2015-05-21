@@ -134,6 +134,13 @@ namespace COLLADASW
 	const String CSWC::CSW_ELEMENT_CONVEX_MESH = "convex_mesh";
 	const String CSWC::CSW_ELEMENT_PHYSICS_MODEL = "physics_model";
 	const String CSWC::CSW_ELEMENT_RIGID_BODY = "rigid_body";
+	const String CSWC::CSW_ELEMENT_RIGID_CONSTRAINT = "rigid_constraint";
+	const String CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_REF_ATTACHMENT = "ref_attachment";
+	const String CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_ATTACHMENT = "attachment";
+	const String CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_LIMITS = "limits";
+	const String CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_SWING_TWIST = "swing_cone_and_twist";
+	const String CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_SWING_TWIST_MIN = "min";
+	const String CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_SWING_TWIST_MAX = "max";
 	const String CSWC::CSW_ELEMENT_RIGID_BODY_DYNAMIC = "dynamic";
 	const String CSWC::CSW_ELEMENT_RIGID_BODY_MASS = "mass";
 	const String CSWC::CSW_ELEMENT_RIGID_BODY_INERTIA = "inertia";
@@ -233,6 +240,9 @@ namespace COLLADASW
     const String CSWC::CSW_ELEMENT_ZFAR = "zfar";
     const String CSWC::CSW_ELEMENT_ZNEAR = "znear";
 	const String CSWC::CSW_ELEMENT_GRAVITY = "gravity";
+	const String CSWC::CSW_ELEMENT_CONSTRAINT_MIN = "linearConstraintMin";
+	const String CSWC::CSW_ELEMENT_CONSTRAINT_MAX = "linearConstraintMax";
+
 
 	const String CSWC::CSW_ATTRIBUTE_CLOSED = "closed";
     const String CSWC::CSW_ATTRIBUTE_COUNT = "count";
@@ -256,6 +266,7 @@ namespace COLLADASW
     const String CSWC::CSW_ATTRIBUTE_SEMANTIC = "semantic";
     const String CSWC::CSW_ATTRIBUTE_SET = "set";
     const String CSWC::CSW_ATTRIBUTE_SID = "sid";
+	const String CSWC::CSW_ATTRIBUTE_RIGID_BODY = "rigid_body";
     const String CSWC::CSW_ATTRIBUTE_SLICE = "slice";
     const String CSWC::CSW_ATTRIBUTE_SOURCE = "source";
     const String CSWC::CSW_ATTRIBUTE_STAGE = "stage";
@@ -264,6 +275,7 @@ namespace COLLADASW
     const String CSWC::CSW_ATTRIBUTE_SYMBOL = "symbol";
 	const String CSWC::CSW_ATTRIBUTE_BODY = "body";
     const String CSWC::CSW_ATTRIBUTE_TARGET = "target";
+	const String CSWC::CSW_ATTRIBUTE_CONSTRAINT = "constraint";
     const String CSWC::CSW_ATTRIBUTE_TEXCOORD = "texcoord";
     const String CSWC::CSW_ATTRIBUTE_TEXTURE = "texture";
     const String CSWC::CSW_ATTRIBUTE_TYPE = "type";

@@ -203,7 +203,7 @@ namespace COLLADAMaya
 		bool exportPhysicRigidBody(MDagPath& dagPath);
 		void exportPhysicRigidConstraints(std::map<String, Constraint>& constraint);
 
-		void createShape(MDagPath& childDagPath);
+		void createShape(MDagPath& childDagPath, MTransformationMatrix mPhysicsShapeTransformMatrix, MTransformationMatrix mGraphicShapeTransformMatrix);
 
 		void UpdateSceneElement(MObject& child, bool result, bool needExport);
 

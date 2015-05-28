@@ -79,6 +79,55 @@ namespace COLLADAMaya
 			Mesh		= 3
 		};
 
+		
+		typedef struct BodyTarget {
+			String Body;
+			String Target;
+		} BodyTarget;
+
+		typedef std::map<String, BodyTarget> RB_Map;
+
+
+		enum ConstraintLimit {
+			Free = 0,
+			Locked = 1,
+			Limited = 2
+		};
+
+
+		typedef struct Constraint {
+
+			int constraintType;
+			int constraintRef;
+			MObject RB_A;
+			MObject RB_B;
+			MObject RB_constraint;
+			
+			// Limits
+			int LinearConstraintX;
+			int LinearConstraintY;
+			int LinearConstraintZ;
+			int AngularConstraintX;
+			int AngularConstraintY;
+			int AngularConstraintZ;
+			MVector angularConstraintMin;
+			MVector angularConstraintMax;
+			MVector linearConstraintMax;
+			MVector	linearConstraintMin;
+			
+			// Springs
+			float angularSpringStiffness;
+			float angularSpringDamping;
+			float angularSpringTarget;
+			float linearSpringStiffness;
+			float linearSpringDamping;
+			float linearSpringTarget;
+			
+		} Constraint;
+
+		typedef std::map<String, Constraint> RB_Constraint;
+
+		
         /* @param streamWriter The stream the output will be written to                                                                     */
         PhysicsExporter ( COLLADASW::StreamWriter* streamWriter, DocumentExporter* documentExporter );
         virtual ~PhysicsExporter();
@@ -103,6 +152,11 @@ namespace COLLADAMaya
 		static std::vector<String>& getRB_Constraint() { return rigidConstraintVector; }
 
 		static std::vector<String> rigidConstraintVector;
+
+		
+		static RB_Constraint& getRB_ConstraintMap() { return constraintMap; }
+		static RB_Constraint constraintMap;
+
 
 		/** Returns if the node is a solver bullet node. */
 		bool isBulletRigidBodySolverNode(MDagPath& dagPath);
@@ -147,7 +201,7 @@ namespace COLLADAMaya
         bool exportPhysicsModel(SceneElement* sceneElement);
 
 		bool exportPhysicRigidBody(MDagPath& dagPath);
-		bool exportPhysicRigidConstraints(MDagPath& dagPath);
+		void exportPhysicRigidConstraints(std::map<String, Constraint>& constraint);
 
 		void createShape(MDagPath& childDagPath);
 

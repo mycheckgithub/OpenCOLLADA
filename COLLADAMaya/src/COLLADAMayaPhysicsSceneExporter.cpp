@@ -63,11 +63,13 @@ namespace COLLADAMaya
         const PhysicsExporter::DaeToIRBMap & instanceRigidBodies = pPhysicsExporter->getInstanceRigidBodies();
 
 
+
 		if (instanceRigidBodies.empty())
 			return false;
+			
+		PhysicsExporter::RB_Constraint& ConstraintMap = PhysicsExporter::getRB_ConstraintMap();
+		std::map<std::string, PhysicsExporter::Constraint>::iterator iterRigidConstraint;
 
-		std::vector<String>& constraintVector = PhysicsExporter::getRB_Constraint();
-		std::vector<std::string>::iterator iterRigidConstraint;
 
 
 		// Get the streamWriter from the export document
@@ -84,6 +86,7 @@ namespace COLLADAMaya
             COLLADASW::InstancePhysicsModel instancePhysicsModel(streamWriter, iMap->first + physicsModelUrl);
             instancePhysicsModel.openInstancePhysicsModel();
 
+            
             for (std::vector<PhysicsExporter::BodyTarget>::const_iterator iVec = iMap->second.begin(); iVec != iMap->second.end(); ++iVec)
             {
                 // Don't export bodies linked to world
@@ -95,10 +98,11 @@ namespace COLLADAMaya
                 }
             }
 
-            for (iterRigidConstraint = constraintVector.begin(); iterRigidConstraint != constraintVector.end(); ++iterRigidConstraint)
+
+			// Instance Rigid Constraint
+			for (iterRigidConstraint = ConstraintMap.begin(); iterRigidConstraint != ConstraintMap.end(); ++iterRigidConstraint)
 			{
-				// Instance Rigid Constraint
-				COLLADASW::InstanceRigidConstraint instanceRigidConstraint(streamWriter, *iterRigidConstraint);
+				COLLADASW::InstanceRigidConstraint instanceRigidConstraint(streamWriter, (iterRigidConstraint->first));
 				instanceRigidConstraint.openInstanceRigidConstraint();
 				instanceRigidConstraint.closeInstanceRigidConstraint();
 			}

@@ -39,6 +39,9 @@
 namespace COLLADAMaya
 {
 	static const char* NAME_SUFFIX_INVALID = "_MAKE_NAME_INVALID";
+
+	std::map<String, PhysicsExporter::Constraint> PhysicsExporter::constraintMap;
+
 	MVector PhysicsExporter::gravityField;
 
     // --------------------------------------------------------
@@ -48,6 +51,8 @@ namespace COLLADAMaya
 		, mDocumentExporter(documentExporter)
 		, mIsFirstRotation(true)
     {
+
+			constraintMap.clear();
 			firstimeOpenPhysModel = true;
     }
 
@@ -65,6 +70,8 @@ namespace COLLADAMaya
         // Get the list with the transform nodes.
         SceneGraph* sceneGraph = mDocumentExporter->getSceneGraph();
         SceneElementsList* exportNodesTree = sceneGraph->getExportNodesTree();
+
+		getRigidConstraintNodes();
 
         // Export all/selected DAG nodes
         size_t length = exportNodesTree->size();
@@ -495,12 +502,14 @@ namespace COLLADAMaya
 	void PhysicsExporter::getRigidConstraintNodes()
 	{
 		MItDag it(MItDag::kDepthFirst);
-
 		while (!it.isDone())
 		{
 			MFnDagNode fn(it.item());
 
 			MDagPath DagPath = MDagPath::getAPathTo(it.item());
+
+			MString path(DagPath.fullPathName());
+
 			if (isBulletRigidConstraintNode(DagPath))
 			{
 				const String& colladaRBConstraintId = generateColladaMeshId(DagPath);
@@ -511,113 +520,293 @@ namespace COLLADAMaya
 				int ref;
 				DagHelper::getPlugValue(DagPath.node(), ATTR_USE_REFERENCE_FRAME, ref);
 
-				MObject ObjA;
+				
 				MStatus status;
-				MPlug plug = MFnDependencyNode(DagPath.node()).findPlug(ATTR_RIGIDBODY_A, &status);
-				if (status == MStatus::kSuccess)
-					plug.getValue(ObjA);
+				MPlug plug;
 
-				const String& colladaMeshId = generateColladaMeshId(MDagPath::getAPathTo(ObjA));
-
-				MString name2;
-				String name = ObjA.apiTypeStr();
-				MFn::Type type1 = ObjA.apiType();
-				MTypeId type2;
-
-				if (ObjA.hasFn(MFn::kPluginData))
-				{
-					MFnPluginData dataPlugin(ObjA, &status);
-					MPxLocatorNode* bullet = (MPxLocatorNode*) (dataPlugin.data(&status));
-					MFnDependencyNode BulletNode(ObjA, &status);
-				}
+				MObject mRB_A;
+				plug = MFnDependencyNode(DagPath.node()).findPlug(ATTR_RIGIDBODY_A, &status);
+				mRB_A = DagHelper::getSourceNodeConnectedTo(plug);
 				
-				
-				
-				
-				MObject ObjB;
-				MStatus status1;
-				plug = MFnDependencyNode(DagPath.node()).findPlug(ATTR_RIGIDBODY_B, &status1);
-				if (status1 == MStatus::kSuccess)
-					plug.getValue(ObjB);
+				MObject mRB_B;
+				plug = MFnDependencyNode(DagPath.node()).findPlug(ATTR_RIGIDBODY_B, &status);
+				mRB_B = DagHelper::getSourceNodeConnectedTo(plug);
+							
 
-				const String& colladaMeshId2 = generateColladaMeshId(MDagPath::getAPathTo(ObjB));
-
-				/*MString RbA;
-				DagHelper::getPlugValue(DagPath.node(), ATTR_RIGIDBODY_A, RbA);
-
-				MString RbB;
-				DagHelper::getPlugValue(DagPath.node(), ATTR_RIGIDBODY_B, RbB);*/
-
-
-				MVector constrainMin;
-				status;
-				plug = MFnDependencyNode(DagPath.node()).findPlug(MString(COLLADASW::CSWC::CSW_ELEMENT_CONSTRAINT_MIN.c_str()), &status);
+				// Angular Limit
+				MVector angularLimitConstraintMin;
+				plug = MFnDependencyNode(DagPath.node()).findPlug(MString(ATTR_ANGULAR_CONSTRAINT_MIN), &status);
 				if (status == MStatus::kSuccess)
 				if (plug.isCompound() && plug.numChildren() >= 3)
 				{
-					status = plug.child(0).getValue(constrainMin.x);
-					status = plug.child(1).getValue(constrainMin.y);
-					status = plug.child(2).getValue(constrainMin.z);
+					status = plug.child(0).getValue(angularLimitConstraintMin.x);
+					status = plug.child(1).getValue(angularLimitConstraintMin.y);
+					status = plug.child(2).getValue(angularLimitConstraintMin.z);
 				}
 
-				MVector constrainMax;
-				plug = MFnDependencyNode(DagPath.node()).findPlug(MString(COLLADASW::CSWC::CSW_ELEMENT_CONSTRAINT_MAX.c_str()), &status);
+				MVector angularLimitConstraintMax;
+				plug = MFnDependencyNode(DagPath.node()).findPlug(MString(ATTR_ANGULAR_CONSTRAINT_MAX), &status);
 				if (status == MStatus::kSuccess)
 				if (plug.isCompound() && plug.numChildren() >= 3)
 				{
-					status = plug.child(0).getValue(constrainMax.x);
-					status = plug.child(1).getValue(constrainMax.y);
-					status = plug.child(2).getValue(constrainMax.z);
+					status = plug.child(0).getValue(angularLimitConstraintMax.x);
+					status = plug.child(1).getValue(angularLimitConstraintMax.y);
+					status = plug.child(2).getValue(angularLimitConstraintMax.z);
+				}
+
+				// Limits
+				// 0: free, 1:locked, 2:limited
+				int linearConstraintX;
+				DagHelper::getPlugValue(DagPath.node(), ATTR_ANGULAR_CONSTRAINT_X, linearConstraintX);
+
+				int linearConstraintY;
+				DagHelper::getPlugValue(DagPath.node(), ATTR_ANGULAR_CONSTRAINT_Y, linearConstraintY);
+
+				int linearConstraintZ;
+				DagHelper::getPlugValue(DagPath.node(), ATTR_ANGULAR_CONSTRAINT_Z, linearConstraintZ);
+
+				int angularConstraintX;
+				DagHelper::getPlugValue(DagPath.node(), ATTR_ANGULAR_CONSTRAINT_X, angularConstraintX);
+
+				int angularConstraintY;
+				DagHelper::getPlugValue(DagPath.node(), ATTR_ANGULAR_CONSTRAINT_Y, angularConstraintY);
+
+				int angularConstraintZ;
+				DagHelper::getPlugValue(DagPath.node(), ATTR_ANGULAR_CONSTRAINT_Z, angularConstraintZ);
+
+
+				MVector linearLimitConstraintMin;
+				plug = MFnDependencyNode(DagPath.node()).findPlug(MString(ATTR_LINEAR_CONSTRAINT_MIN), &status);
+				if (status == MStatus::kSuccess)
+				if (plug.isCompound() && plug.numChildren() >= 3)
+				{
+					status = plug.child(0).getValue(linearLimitConstraintMin.x);
+					status = plug.child(1).getValue(linearLimitConstraintMin.y);
+					status = plug.child(2).getValue(linearLimitConstraintMin.z);
+				}
+
+				MVector linearLimitConstraintMax;
+				plug = MFnDependencyNode(DagPath.node()).findPlug(MString(ATTR_LINEAR_CONSTRAINT_MAX), &status);
+				if (status == MStatus::kSuccess)
+				if (plug.isCompound() && plug.numChildren() >= 3)
+				{
+					status = plug.child(0).getValue(linearLimitConstraintMax.x);
+					status = plug.child(1).getValue(linearLimitConstraintMax.y);
+					status = plug.child(2).getValue(linearLimitConstraintMax.z);
 				}
 
 
-				exportPhysicRigidConstraints(DagPath);
+				// Spring
+				MVector linearSpringStiffness;
+				plug = MFnDependencyNode(DagPath.node()).findPlug(MString(ATTR_LINEAR_SPRING_STIFFNESS), &status);
+				if (status == MStatus::kSuccess)
+				if (plug.isCompound() && plug.numChildren() >= 3)
+				{
+					status = plug.child(0).getValue(linearSpringStiffness.x);
+					status = plug.child(1).getValue(linearSpringStiffness.y);
+					status = plug.child(2).getValue(linearSpringStiffness.z);
+				}
 
+				MVector linearSpringDamping;
+				plug = MFnDependencyNode(DagPath.node()).findPlug(MString(ATTR_LINEAR_SPRING_DAMPING), &status);
+				if (status == MStatus::kSuccess)
+				if (plug.isCompound() && plug.numChildren() >= 3)
+				{
+					status = plug.child(0).getValue(linearSpringDamping.x);
+					status = plug.child(1).getValue(linearSpringDamping.y);
+					status = plug.child(2).getValue(linearSpringDamping.z);
+				}
+
+				MVector angularSpringStiffness;
+				plug = MFnDependencyNode(DagPath.node()).findPlug(MString(ATTR_ANGULAR_SPRING_STIFFNESS), &status);
+				if (status == MStatus::kSuccess)
+				if (plug.isCompound() && plug.numChildren() >= 3)
+				{
+					status = plug.child(0).getValue(angularSpringStiffness.x);
+					status = plug.child(1).getValue(angularSpringStiffness.y);
+					status = plug.child(2).getValue(angularSpringStiffness.z);
+				}
+
+				MVector angularSpringDamping;
+				plug = MFnDependencyNode(DagPath.node()).findPlug(MString(ATTR_ANGULAR_SPRING_DAMPING), &status);
+				if (status == MStatus::kSuccess)
+				if (plug.isCompound() && plug.numChildren() >= 3)
+				{
+					status = plug.child(0).getValue(angularSpringDamping.x);
+					status = plug.child(1).getValue(angularSpringDamping.y);
+					status = plug.child(2).getValue(angularSpringDamping.z);
+				}
+
+
+				Constraint myConstraint;
+				myConstraint.LinearConstraintX = linearConstraintX;
+				myConstraint.LinearConstraintY = linearConstraintY;
+				myConstraint.LinearConstraintZ = linearConstraintZ;
+				myConstraint.AngularConstraintX = angularConstraintX;
+				myConstraint.AngularConstraintY = angularConstraintY;
+				myConstraint.AngularConstraintZ = angularConstraintZ;
+				myConstraint.angularConstraintMax = angularLimitConstraintMax;
+				myConstraint.angularConstraintMin = angularLimitConstraintMin;
+				myConstraint.linearConstraintMax = linearLimitConstraintMax;
+				myConstraint.linearConstraintMin = linearLimitConstraintMin;
+
+				myConstraint.angularSpringStiffness = angularSpringStiffness.x;
+				myConstraint.angularSpringDamping = angularSpringDamping.x;
+				myConstraint.angularSpringDamping = angularSpringDamping.x;
+				myConstraint.linearSpringStiffness = linearSpringStiffness.x;
+				myConstraint.linearSpringDamping = linearSpringDamping.x;
+				myConstraint.linearSpringDamping = linearSpringDamping.x;
+
+				myConstraint.constraintRef = ref;
+				myConstraint.constraintType = type;
+				myConstraint.RB_constraint = it.item();
+				myConstraint.RB_A = mRB_A;
+				myConstraint.RB_B = mRB_B;
+
+				constraintMap[colladaRBConstraintId] = myConstraint;
 			}
 
 			it.next();
 		}
 	}
 
-	bool PhysicsExporter::exportPhysicRigidConstraints(MDagPath& dagPath)
+
+	void PhysicsExporter::exportPhysicRigidConstraints(std::map<String, Constraint>& constraint)
 	{
-		openRigidConstraint("sid", "name");
+		std::map<std::string, PhysicsExporter::Constraint>::iterator iterRigidConstraint;
+		for (iterRigidConstraint = constraint.begin(); iterRigidConstraint != constraint.end(); ++iterRigidConstraint)
+		{
+			PhysicsExporter::Constraint constraint = iterRigidConstraint->second;
+			String colladaRBConstraintId = iterRigidConstraint->first;
 
-		// Ref Attachment
-		openRefAttachment("name");
-		addTranslate("translate", 0, 0, 0);
+			openRigidConstraint(colladaRBConstraintId, colladaRBConstraintId);
 
-		addRotate("rotateX", 0, 0, 0, 0);
-		addRotate("rotateY", 0, 0, 0, 0);
-		addRotate("rotateZ", 0, 0, 0, 0);
+			MFnDependencyNode fnRB_A(constraint.RB_A);
+			MFnDependencyNode fnRB_B(constraint.RB_B);
+			
+			// Ref Attachment
+			if (constraint.constraintRef == 0)
+				openRefAttachment(fnRB_A.name().asChar());
+			else
+				openRefAttachment(fnRB_B.name().asChar());
 
-		closeRefAttachment();
 
-		// Attachment
-		openAttachment("name");
-		addTranslate("translate", 0, 0, 0);
+			double resultFinal2[4][4];
+			
+			MDagPath DagPath = MDagPath::getAPathTo(constraint.RB_constraint);
+			MTransformationMatrix mTransformMatrixConstraint(DagPath.inclusiveMatrix());
+			MMatrix MatShape(mTransformMatrixConstraint.asMatrix());
+			MatShape.get(resultFinal2);
+			
 
-		addRotate("rotateX", 0, 0, 0, 0);
-		addRotate("rotateY", 0, 0, 0, 0);
-		addRotate("rotateZ", 0, 0, 0, 0);
+			MFnTransform fnRA(MDagPath::getAPathTo(constraint.RB_A).transform());
+			MTransformationMatrix mTransformConstraintMatrixRA(fnRA.transformation());
+			MMatrix MatRA(mTransformConstraintMatrixRA.asMatrixInverse());
 
-		closeAttachment();
+			MMatrix resultRelA = MatShape * MatRA;
+			double resultA[4][4];
+			resultRelA.get(resultA);
 
-		openTechniqueCommon();
+			MFnTransform fnRB(MDagPath::getAPathTo(constraint.RB_B).transform());
+			MTransformationMatrix mTransformConstraintMatrixRB(fnRB.transformation());
+			MMatrix MatRB(mTransformConstraintMatrixRB.asMatrixInverse());
 
-		openLimits();
+			MMatrix resultRelB = MatShape * MatRB;
+			double resultB[4][4];
+			resultRelB.get(resultB);
 
-		AddSwingAndTwistLimit(0, 0, 0, 0, 0, 0);
 
-		closeLimits();
+			MEulerRotation RotB = mTransformConstraintMatrixRB.eulerRotation();
+			MEulerRotation RotA = mTransformConstraintMatrixRA.eulerRotation();
 
-		closeTechniqueCommon();
+			RotateHelper rotateHelperA(RotA);
+			std::vector<std::vector<double> >& matrixRotateA = rotateHelperA.getRotationMatrix();
+			std::vector<String>& rotateParamsA = rotateHelperA.getRotationParameters();
 
-		closeRigidConstraint();
+			RotateHelper rotateHelperB(RotB);
+			std::vector<std::vector<double> >& matrixRotateB = rotateHelperB.getRotationMatrix();
+			std::vector<String>& rotateParamsB = rotateHelperB.getRotationParameters();
 
-		rigidConstraintVector.push_back("name");
 
-		return true;
+
+
+			MTransformationMatrix translationA(resultRelA);
+			MVector MtranslationA = translationA.getTranslation(MSpace::kTransform);
+			addTranslate("translate", COLLADABU::Math::Utils::equalsZero(MtranslationA.x, getTolerance()) ? 0 : MtranslationA.x,
+				COLLADABU::Math::Utils::equalsZero(MtranslationA.y, getTolerance()) ? 0 : MtranslationA.y,
+				COLLADABU::Math::Utils::equalsZero(MtranslationA.z, getTolerance()) ? 0 : MtranslationA.z);
+
+			for (uint i = 0; i < 3; ++i)
+			{
+				addRotate("rotate" + rotateParamsA[i],
+					COLLADABU::Math::Utils::equalsZero(matrixRotateA[i][0], getTolerance()) ? 0 : matrixRotateA[i][0],
+					COLLADABU::Math::Utils::equalsZero(matrixRotateA[i][1], getTolerance()) ? 0 : matrixRotateA[i][1],
+					COLLADABU::Math::Utils::equalsZero(matrixRotateA[i][2], getTolerance()) ? 0 : matrixRotateA[i][2],
+					COLLADABU::Math::Utils::equalsZero(matrixRotateA[i][3], getTolerance()) ? 0 : matrixRotateA[i][3]);
+			}
+
+			closeRefAttachment();
+
+
+
+			// Attachment
+			if (constraint.constraintRef == 0)
+				openAttachment(fnRB_B.name().asChar());
+			else
+				openAttachment(fnRB_A.name().asChar());
+
+			MTransformationMatrix translationB(resultRelB);
+			MVector MtranslationB = translationB.getTranslation(MSpace::kTransform);
+
+			addTranslate("translate", COLLADABU::Math::Utils::equalsZero(MtranslationB.x, getTolerance()) ? 0 : MtranslationB.x,
+				COLLADABU::Math::Utils::equalsZero(MtranslationB.y, getTolerance()) ? 0 : MtranslationB.y,
+				COLLADABU::Math::Utils::equalsZero(MtranslationB.z, getTolerance()) ? 0 : MtranslationB.z);
+
+			for (uint i = 0; i < 3; ++i)
+			{
+				addRotate("rotate" + rotateParamsB[i],
+					COLLADABU::Math::Utils::equalsZero(matrixRotateB[i][0], getTolerance()) ? 0 : matrixRotateB[i][0],
+					COLLADABU::Math::Utils::equalsZero(matrixRotateB[i][1], getTolerance()) ? 0 : matrixRotateB[i][1],
+					COLLADABU::Math::Utils::equalsZero(matrixRotateB[i][2], getTolerance()) ? 0 : matrixRotateB[i][2],
+					COLLADABU::Math::Utils::equalsZero(matrixRotateB[i][3], getTolerance()) ? 0 : matrixRotateB[i][3]);
+			}
+
+			closeAttachment();
+
+			openTechniqueCommon();
+
+			openLimits();
+				if (constraint.AngularConstraintX == COLLADAMaya::PhysicsExporter::Free)
+				{
+					
+				}
+				else if (constraint.AngularConstraintX == COLLADAMaya::PhysicsExporter::Locked)
+				{
+
+				}
+				else if (constraint.AngularConstraintX == COLLADAMaya::PhysicsExporter::Limited)
+				{
+
+				}
+				constraint.AngularConstraintY;
+				constraint.AngularConstraintZ;
+				AddSwingAndTwistLimit(constraint.angularConstraintMin.x, constraint.angularConstraintMin.y, constraint.angularConstraintMin.z, constraint.angularConstraintMax.x, constraint.angularConstraintMax.y, constraint.angularConstraintMax.z);
+	
+				constraint.LinearConstraintX;
+				constraint.LinearConstraintY;
+				constraint.LinearConstraintZ;
+				AddLinearLimit(constraint.linearConstraintMin.x, constraint.linearConstraintMin.y, constraint.linearConstraintMin.z, constraint.linearConstraintMax.x, constraint.linearConstraintMax.y, constraint.linearConstraintMax.z);
+			closeLimits();
+
+			openSpring();
+				AddAngularSpring(constraint.angularSpringStiffness, constraint.angularSpringDamping, constraint.angularSpringTarget);
+				AddLinearSpring(constraint.linearSpringStiffness, constraint.linearSpringDamping, constraint.linearSpringTarget);
+			closeSpring();
+
+			closeTechniqueCommon();
+
+			closeRigidConstraint();
+		}
 	}
 
 	static void searchAndUpdate(SceneElement* sceneElement, MDagPath& ChildPath, bool result, bool needExport)
@@ -813,12 +1002,15 @@ namespace COLLADAMaya
 		if (firstimeOpenPhysModel)
 		{
 			openPhysicsModel(PHYSIC_MODEL_ID, "");
+
+			PhysicsExporter::RB_Constraint& ConstraintMap = PhysicsExporter::getRB_ConstraintMap();
+			exportPhysicRigidConstraints(ConstraintMap);
+
 			firstimeOpenPhysModel = false;
 		}
 		
 		exportPhysicRigidBody(dagPath);
-
-		getRigidConstraintNodes();// exportPhysicRigidConstraints(dagPath);
+		
 
 		return true;
     }

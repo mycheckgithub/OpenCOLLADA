@@ -77,9 +77,63 @@ namespace COLLADASW
 		mCurrentLimitCloser.close();
 	}
 
+	void LibraryPhysicsModels::openSpring()
+	{
+		mCurrentSpringCloser = mSW->openElement(CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_SPRING);
+	}
+
+	void LibraryPhysicsModels::closeSpring()
+	{
+		mCurrentSpringCloser.close();
+	}
+
+	void LibraryPhysicsModels::AddAngularSpring(float stiffness, float damping, float target)
+	{
+		mSW->openElement(CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_SPRING_ANGULAR);
+
+		mSW->openElement(CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_SPRING_STIFFNESS);
+		mSW->appendAttribute(CSWC::CSW_ATTRIBUTE_SID, "stiffness");
+		mSW->appendValues(stiffness);
+		mSW->closeElement();
+
+		mSW->openElement(CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_SPRING_DAMPING);
+		mSW->appendAttribute(CSWC::CSW_ATTRIBUTE_SID, "damping");
+		mSW->appendValues(damping);
+		mSW->closeElement();
+
+		mSW->openElement(CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_SPRING_TARGET);
+		mSW->appendAttribute(CSWC::CSW_ATTRIBUTE_SID, "target");
+		mSW->appendValues(target);
+		mSW->closeElement();
+
+		mSW->closeElement();
+	}
+
+	void LibraryPhysicsModels::AddLinearSpring(float stiffness, float damping, float target)
+	{
+		mSW->openElement(CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_SPRING_LINEAR);
+
+		mSW->openElement(CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_SPRING_STIFFNESS);
+		mSW->appendAttribute(CSWC::CSW_ATTRIBUTE_SID, "stiffness");
+		mSW->appendValues(stiffness);
+		mSW->closeElement();
+
+		mSW->openElement(CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_SPRING_DAMPING);
+		mSW->appendAttribute(CSWC::CSW_ATTRIBUTE_SID, "damping");
+		mSW->appendValues(damping);
+		mSW->closeElement();
+
+		mSW->openElement(CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_SPRING_TARGET);
+		mSW->appendAttribute(CSWC::CSW_ATTRIBUTE_SID, "target");
+		mSW->appendValues(target);
+		mSW->closeElement();
+
+		mSW->closeElement();
+	}
+
 	void LibraryPhysicsModels::AddSwingAndTwistLimit(float xMin, float yMin, float zMin, float xMax, float yMax, float zMax)
 	{
-		mSW->openElement(CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_SWING_TWIST);
+		mSW->openElement(CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_SWING_TWIST_LIMITS);
 		
 		mSW->openElement(CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_SWING_TWIST_MIN);
 		mSW->appendAttribute(CSWC::CSW_ATTRIBUTE_SID, "swing_min");
@@ -88,6 +142,23 @@ namespace COLLADASW
 		
 		mSW->openElement(CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_SWING_TWIST_MAX);
 		mSW->appendAttribute(CSWC::CSW_ATTRIBUTE_SID, "swing_max");
+		mSW->appendValues(xMax, yMax, zMax);
+		mSW->closeElement();
+
+		mSW->closeElement();
+	}
+
+	void LibraryPhysicsModels::AddLinearLimit(float xMin, float yMin, float zMin, float xMax, float yMax, float zMax)
+	{
+		mSW->openElement(CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_LINEAR_LIMITS);
+
+		mSW->openElement(CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_SWING_TWIST_MIN);
+		mSW->appendAttribute(CSWC::CSW_ATTRIBUTE_SID, "linear_min");
+		mSW->appendValues(xMin, yMin, zMin);
+		mSW->closeElement();
+
+		mSW->openElement(CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_SWING_TWIST_MAX);
+		mSW->appendAttribute(CSWC::CSW_ATTRIBUTE_SID, "linear_max");
 		mSW->appendValues(xMax, yMax, zMax);
 		mSW->closeElement();
 

@@ -33,6 +33,7 @@ namespace COLLADASW
 		TagCloser mCurrentRefAttachmentCloser;
 		TagCloser mCurrentAttachmentCloser;
 		TagCloser mCurrentLimitCloser;
+		TagCloser mCurrentSpringCloser;
 
 		TagCloser mCurrentShapeCloser;
 		
@@ -49,13 +50,21 @@ namespace COLLADASW
 
 		void openRigidConstraint(const String & rbSId, const String & rbName);
 		void closeRigidConstraint();
+		
 		void openRefAttachment(const String & rbName);
 		void closeRefAttachment();
 		void openAttachment(const String & rbName);
 		void closeAttachment();
+		
+		void openSpring();
+		void AddAngularSpring(float stiffness, float damping, float target);
+		void AddLinearSpring(float stiffness, float damping, float target);
+		void closeSpring();
+
 		void openLimits();
-		void closeLimits();
 		void AddSwingAndTwistLimit(float xMin, float yMin, float zMin, float xMax, float yMax, float zMax);
+		void AddLinearLimit(float xMin, float yMin, float zMin, float xMax, float yMax, float zMax);
+		void closeLimits();
 
 		void openRigidBody(const String & rbSId, const String & rbName);
 		void closeRigidBody();
@@ -69,16 +78,13 @@ namespace COLLADASW
 		void AddBoxShape(float x, float y, float z);
 		void AddCapsuleShape(float radiusX, float radiusY, float radiusZ, float height);
 		void AddConvexMeshShape(const String &convexHullOf);
-		//void closeBoxShape();
-
+		
 		void addDynamic(bool dynamic);
 		void addMass(float mass);
 		void addInertia(float x, float y, float z);
 
 		void addTranslate(const String &sid, float x, float y, float z) const;
 		void addRotate(const String &sid, double x, double y, double z, double angle) const;
-
-		//void addExtent(float x, float y, float z);
 
 
         /** Writes the opening @a \<rigid_body\> tag and, if necessary the opening @a \<library_physics_models\> tag.

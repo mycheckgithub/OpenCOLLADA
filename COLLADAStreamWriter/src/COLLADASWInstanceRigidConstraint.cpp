@@ -17,7 +17,7 @@ namespace COLLADASW
 	//---------------------------------------------------------------
 	void InstanceRigidConstraint::openInstanceRigidConstraint()
 	{
-		mCurrentInstanceRigidConstraintcloser = mSW->openElement(CSWC::CSW_ELEMENT_INSTANCE_RIGID_BODY);
+		mCurrentInstanceRigidConstraintcloser = mSW->openElement(CSWC::CSW_ELEMENT_INSTANCE_RIGID_CONSTRAINT);
 		mSW->appendAttribute(CSWC::CSW_ATTRIBUTE_CONSTRAINT, mConstraint);
 		mSW->closeElement();
 	}

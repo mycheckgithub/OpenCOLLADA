@@ -323,10 +323,26 @@ namespace COLLADAMaya
 	static const char* ATTR_BODY_TYPE								= "bodyType";
 	static const char* ATTR_DYNAMIC									= "dynamic";
 	static const char* ATTR_INERTIA									= "inertia";
+	
 	static const char* ATTR_CONSTRAINT_TYPE							= "constraintType";
 	static const char* ATTR_USE_REFERENCE_FRAME						= "useReferenceFrame";
 	static const char* ATTR_RIGIDBODY_A								= "rigidBodyA";
 	static const char* ATTR_RIGIDBODY_B								= "rigidBodyB";
+	static const char* ATTR_LINEAR_CONSTRAINT_MIN					= "linearConstraintMin";
+	static const char* ATTR_LINEAR_CONSTRAINT_MAX					= "linearConstraintMax";
+	static const char* ATTR_ANGULAR_CONSTRAINT_MIN					= "angularConstraintMin";
+	static const char* ATTR_ANGULAR_CONSTRAINT_MAX					= "angularConstraintMax";
+	static const char* ATTR_LINEAR_SPRING_STIFFNESS					= "linearSpringStiffness";
+	static const char* ATTR_LINEAR_SPRING_DAMPING					= "linearSpringDamping";
+	static const char* ATTR_ANGULAR_SPRING_STIFFNESS				= "angularSpringStiffness";
+	static const char* ATTR_ANGULAR_SPRING_DAMPING					= "angularSpringDamping";
+	static const char* ATTR_LINEAR_CONSTRAINT_X						= "linearConstraintX";
+	static const char* ATTR_LINEAR_CONSTRAINT_Y						= "linearConstraintY";
+	static const char* ATTR_LINEAR_CONSTRAINT_Z						= "linearConstraintZ";
+	static const char* ATTR_ANGULAR_CONSTRAINT_X					= "angularConstraintX";
+	static const char* ATTR_ANGULAR_CONSTRAINT_Y					= "angularConstraintY";
+	static const char* ATTR_ANGULAR_CONSTRAINT_Z					= "angularConstraintZ";
+	
 	static const char* ATTR_EXTENT									= "extent";
 	
 	static const char* ATTR_ACTIVE									= "active";

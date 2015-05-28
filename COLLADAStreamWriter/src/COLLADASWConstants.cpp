@@ -102,6 +102,7 @@ namespace COLLADASW
     const String CSWC::CSW_ELEMENT_INSTANCE_LIGHT = "instance_light";
     const String CSWC::CSW_ELEMENT_INSTANCE_MATERIAL = "instance_material";
 	const String CSWC::CSW_ELEMENT_INSTANCE_RIGID_BODY = "instance_rigid_body";
+	const String CSWC::CSW_ELEMENT_INSTANCE_RIGID_CONSTRAINT = "instance_rigid_constraint";
 	const String CSWC::CSW_ELEMENT_INSTANCE_PHYSICS_MODEL = "instance_physics_model";
     const String CSWC::CSW_ELEMENT_INSTANCE_NODE = "instance_node";
     const String CSWC::CSW_ELEMENT_INSTANCE_VISUAL_SCENE = "instance_visual_scene";
@@ -134,13 +135,23 @@ namespace COLLADASW
 	const String CSWC::CSW_ELEMENT_CONVEX_MESH = "convex_mesh";
 	const String CSWC::CSW_ELEMENT_PHYSICS_MODEL = "physics_model";
 	const String CSWC::CSW_ELEMENT_RIGID_BODY = "rigid_body";
+	
 	const String CSWC::CSW_ELEMENT_RIGID_CONSTRAINT = "rigid_constraint";
 	const String CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_REF_ATTACHMENT = "ref_attachment";
 	const String CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_ATTACHMENT = "attachment";
+	const String CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_SPRING = "spring";
+	const String CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_SPRING_LINEAR = "linear";
+	const String CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_SPRING_ANGULAR = "angular";
+	const String CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_SPRING_STIFFNESS = "stiffness";
+	const String CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_SPRING_DAMPING = "damping";
+	const String CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_SPRING_TARGET = "target";
 	const String CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_LIMITS = "limits";
-	const String CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_SWING_TWIST = "swing_cone_and_twist";
+	const String CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_SWING_TWIST_LIMITS = "swing_cone_and_twist";
+	const String CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_LINEAR_LIMITS = "linear";
 	const String CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_SWING_TWIST_MIN = "min";
 	const String CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_SWING_TWIST_MAX = "max";
+
+
 	const String CSWC::CSW_ELEMENT_RIGID_BODY_DYNAMIC = "dynamic";
 	const String CSWC::CSW_ELEMENT_RIGID_BODY_MASS = "mass";
 	const String CSWC::CSW_ELEMENT_RIGID_BODY_INERTIA = "inertia";
@@ -240,8 +251,7 @@ namespace COLLADASW
     const String CSWC::CSW_ELEMENT_ZFAR = "zfar";
     const String CSWC::CSW_ELEMENT_ZNEAR = "znear";
 	const String CSWC::CSW_ELEMENT_GRAVITY = "gravity";
-	const String CSWC::CSW_ELEMENT_CONSTRAINT_MIN = "linearConstraintMin";
-	const String CSWC::CSW_ELEMENT_CONSTRAINT_MAX = "linearConstraintMax";
+	
 
 
 	const String CSWC::CSW_ATTRIBUTE_CLOSED = "closed";

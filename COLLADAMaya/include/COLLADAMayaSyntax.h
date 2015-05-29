@@ -317,8 +317,8 @@ namespace COLLADAMaya
 	static const char* BULLET_PHYSIKS_NODE							= "bulletRigidBodyShape";
 	static const char* BULLET_PHYSIKS_SOLVER_NODE					= "bulletSolverShape";
 	static const char* BULLET_PHYSIKS_CONSTRAINT_NODE				= "bulletRigidBodyConstraintShape";
-	static const char* PHYSIC_MODEL_ID								= "PhysicModel";
-	static const char* PHYSIC_WORLD_REFERENCE						= "world";
+	static const char* PHYSICS_MODEL_ID								= "PhysicModel";
+	static const char* PHYSICS_WORLD_REFERENCE						= "world";
 	static const char* ATTR_MASS									= "mass";
 	static const char* ATTR_BODY_TYPE								= "bodyType";
 	static const char* ATTR_DYNAMIC									= "dynamic";

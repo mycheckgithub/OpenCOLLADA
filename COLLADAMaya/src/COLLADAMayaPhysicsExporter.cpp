@@ -499,6 +499,51 @@ namespace COLLADAMaya
 		}
 	}
 	
+
+	static SceneElement* search(SceneElement* sceneElement, MDagPath& path)
+	{
+		static bool found = false;
+		static SceneElement* el = NULL;
+
+		if (sceneElement->getPath() == path)
+		{
+			found = true;
+			el = sceneElement;
+		}
+
+		for (uint i = 0; i < sceneElement->getChildCount(); ++i)
+		{
+			if (!found)
+			{
+				SceneElement* childElement = sceneElement->getChild(i);
+				search(childElement, path);
+			}
+		}
+
+		return el;
+	}
+
+
+	SceneElement* PhysicsExporter::getSceneElementFromDagPath(MDagPath& path)
+	{
+		SceneGraph* sceneGraph = mDocumentExporter->getSceneGraph();
+		SceneElementsList* exportNodesTree = sceneGraph->getExportNodesTree();
+		SceneElement* elFound = NULL;
+
+		for (std::vector<SceneElement*>::iterator it = exportNodesTree->begin(); it != exportNodesTree->end(); ++it)
+		{
+			//String ElementDagPath = (*it)->getPath().fullPathName().asChar();
+			if (elFound == NULL)
+			{
+				SceneElement* sceneElement = (*it);
+				elFound = search(sceneElement, path);
+			}
+		}
+
+		return elFound;
+	}
+
+
 	void PhysicsExporter::getRigidConstraintNodes()
 	{
 		MItDag it(MItDag::kDepthFirst);
@@ -512,7 +557,11 @@ namespace COLLADAMaya
 
 			if (isBulletRigidConstraintNode(DagPath))
 			{
-				const String& colladaRBConstraintId = generateColladaMeshId(DagPath);
+				
+				SceneElement* sceneElement = getSceneElementFromDagPath(DagPath);
+
+				//const String& colladaRBConstraintId = generateColladaMeshId(DagPath);
+				const String& colladaRBConstraintId = generateColladaRigidBodyId(DagPath, sceneElement->getIsLocal());//generateColladaMeshId(DagPath);
 
 				int type;
 				DagHelper::getPlugValue(DagPath.node(), ATTR_CONSTRAINT_TYPE, type);
@@ -557,13 +606,13 @@ namespace COLLADAMaya
 				// Limits
 				// 0: free, 1:locked, 2:limited
 				int linearConstraintX;
-				DagHelper::getPlugValue(DagPath.node(), ATTR_ANGULAR_CONSTRAINT_X, linearConstraintX);
+				DagHelper::getPlugValue(DagPath.node(), ATTR_LINEAR_CONSTRAINT_X, linearConstraintX);
 
 				int linearConstraintY;
-				DagHelper::getPlugValue(DagPath.node(), ATTR_ANGULAR_CONSTRAINT_Y, linearConstraintY);
+				DagHelper::getPlugValue(DagPath.node(), ATTR_LINEAR_CONSTRAINT_Y, linearConstraintY);
 
 				int linearConstraintZ;
-				DagHelper::getPlugValue(DagPath.node(), ATTR_ANGULAR_CONSTRAINT_Z, linearConstraintZ);
+				DagHelper::getPlugValue(DagPath.node(), ATTR_LINEAR_CONSTRAINT_Z, linearConstraintZ);
 
 				int angularConstraintX;
 				DagHelper::getPlugValue(DagPath.node(), ATTR_ANGULAR_CONSTRAINT_X, angularConstraintX);
@@ -652,10 +701,10 @@ namespace COLLADAMaya
 
 				myConstraint.angularSpringStiffness = angularSpringStiffness.x;
 				myConstraint.angularSpringDamping = angularSpringDamping.x;
-				myConstraint.angularSpringDamping = angularSpringDamping.x;
+				//myConstraint.angularSpringTarget = angularSpringTarget.x;
 				myConstraint.linearSpringStiffness = linearSpringStiffness.x;
 				myConstraint.linearSpringDamping = linearSpringDamping.x;
-				myConstraint.linearSpringDamping = linearSpringDamping.x;
+				//myConstraint.linearSpringTarget = linearSpringTarget.x;
 
 				myConstraint.constraintRef = ref;
 				myConstraint.constraintType = type;
@@ -776,31 +825,99 @@ namespace COLLADAMaya
 			openTechniqueCommon();
 
 			openLimits();
+				
+				//Angular Constraint
+				std::vector<String> minAngularValues(3);
+				std::vector<String> maxAngularValues(3);
+
+				// Locked
+				if (constraint.AngularConstraintX == COLLADAMaya::PhysicsExporter::Locked)
+				{
+					constraint.angularConstraintMin.x = constraint.angularConstraintMax.x = 0;
+				}
+				if (constraint.AngularConstraintY == COLLADAMaya::PhysicsExporter::Locked)
+				{
+					constraint.angularConstraintMin.y = constraint.angularConstraintMax.y = 0;
+				}
+				if (constraint.AngularConstraintZ == COLLADAMaya::PhysicsExporter::Locked)
+				{
+					constraint.angularConstraintMin.z = constraint.angularConstraintMax.z = 0;
+				}
+
+				minAngularValues[0] = std::to_string(constraint.angularConstraintMin.x);
+				maxAngularValues[0] = std::to_string(constraint.angularConstraintMax.x);
+				minAngularValues[1] = std::to_string(constraint.angularConstraintMin.y);
+				maxAngularValues[1] = std::to_string(constraint.angularConstraintMax.y);
+				minAngularValues[2] = std::to_string(constraint.angularConstraintMin.z);
+				maxAngularValues[2] = std::to_string(constraint.angularConstraintMax.z);
+
+				// Free
 				if (constraint.AngularConstraintX == COLLADAMaya::PhysicsExporter::Free)
 				{
-					
+					minAngularValues[0] = "-INF";
+					maxAngularValues[0] = "+INF";
 				}
-				else if (constraint.AngularConstraintX == COLLADAMaya::PhysicsExporter::Locked)
+				if (constraint.AngularConstraintY == COLLADAMaya::PhysicsExporter::Free)
 				{
-
+					minAngularValues[1] = "-INF";
+					maxAngularValues[1] = "+INF";
 				}
-				else if (constraint.AngularConstraintX == COLLADAMaya::PhysicsExporter::Limited)
+				if (constraint.AngularConstraintZ == COLLADAMaya::PhysicsExporter::Free)
 				{
-
+					minAngularValues[2] = "-INF";
+					maxAngularValues[2] = "+INF";
 				}
-				constraint.AngularConstraintY;
-				constraint.AngularConstraintZ;
-				AddSwingAndTwistLimit(constraint.angularConstraintMin.x, constraint.angularConstraintMin.y, constraint.angularConstraintMin.z, constraint.angularConstraintMax.x, constraint.angularConstraintMax.y, constraint.angularConstraintMax.z);
-	
-				constraint.LinearConstraintX;
-				constraint.LinearConstraintY;
-				constraint.LinearConstraintZ;
-				AddLinearLimit(constraint.linearConstraintMin.x, constraint.linearConstraintMin.y, constraint.linearConstraintMin.z, constraint.linearConstraintMax.x, constraint.linearConstraintMax.y, constraint.linearConstraintMax.z);
+				
+				AddSwingAndTwistLimit(minAngularValues, maxAngularValues);
+
+
+				//Linear Constraint
+				std::vector<String> minLinearValues(3);
+				std::vector<String> maxLinearValues(3);
+
+				if (constraint.LinearConstraintX == COLLADAMaya::PhysicsExporter::Locked)
+				{
+					constraint.linearConstraintMin.x = constraint.linearConstraintMax.x = 0;
+				}
+				if (constraint.LinearConstraintY == COLLADAMaya::PhysicsExporter::Locked)
+				{
+					constraint.linearConstraintMin.y = constraint.linearConstraintMax.y = 0;
+				}
+				if (constraint.LinearConstraintZ == COLLADAMaya::PhysicsExporter::Locked)
+				{
+					constraint.linearConstraintMin.z = constraint.linearConstraintMax.z = 0;
+				}
+
+				minLinearValues[0] = std::to_string(constraint.linearConstraintMin.x);
+				maxLinearValues[0] = std::to_string(constraint.linearConstraintMax.x);
+				minLinearValues[1] = std::to_string(constraint.linearConstraintMin.y);
+				maxLinearValues[1] = std::to_string(constraint.linearConstraintMax.y);
+				minLinearValues[2] = std::to_string(constraint.linearConstraintMin.z);
+				maxLinearValues[2] = std::to_string(constraint.linearConstraintMax.z);
+
+				if (constraint.LinearConstraintX == COLLADAMaya::PhysicsExporter::Free)
+				{
+					minLinearValues[0] = "-INF";
+					maxLinearValues[0] = "+INF";
+				}
+				if (constraint.LinearConstraintY == COLLADAMaya::PhysicsExporter::Free)
+				{
+					minLinearValues[1] = "-INF";
+					maxLinearValues[1] = "+INF";
+				}
+				if (constraint.LinearConstraintZ == COLLADAMaya::PhysicsExporter::Free)
+				{
+					minLinearValues[2] = "-INF";
+					maxLinearValues[2] = "+INF";
+				}
+
+				AddLinearLimit(minLinearValues, maxLinearValues);
+
 			closeLimits();
 
 			openSpring();
-				AddAngularSpring(constraint.angularSpringStiffness, constraint.angularSpringDamping, constraint.angularSpringTarget);
-				AddLinearSpring(constraint.linearSpringStiffness, constraint.linearSpringDamping, constraint.linearSpringTarget);
+				AddAngularSpring(constraint.angularSpringStiffness, constraint.angularSpringDamping, /*constraint.angularSpringTarget*/0.0f);
+				AddLinearSpring(constraint.linearSpringStiffness, constraint.linearSpringDamping, /*constraint.linearSpringTarget*/0.0f);
 			closeSpring();
 
 			closeTechniqueCommon();
@@ -850,9 +967,9 @@ namespace COLLADAMaya
 
     // --------------------------------------------------------
 	bool PhysicsExporter::exportPhysicsModel(
-        SceneElement* sceneElement)
-    {
-        MDagPath dagPath = sceneElement->getPath();
+		SceneElement* sceneElement)
+	{
+		MDagPath dagPath = sceneElement->getPath();
 		const String& colladaMeshId = generateColladaRigidBodyId(dagPath, sceneElement->getIsLocal());
 		String meshName = mDocumentExporter->dagPathToColladaName(dagPath);
 
@@ -861,58 +978,61 @@ namespace COLLADAMaya
 		MObject parent = DagNode.parent(0);
 		MFnDagNode fnParent(parent);
 		MString parentName = fnParent.name();
-        if (sceneElement->getIsLocal())
-        {
-            if (firstimeOpenPhysModel)
-            {
-                openPhysicsModel(PHYSICS_MODEL_ID, "");
-                firstimeOpenPhysModel = false;
-            }
-
-            openRigidBody(colladaMeshId, "");
-            openTechniqueCommon();
-
-            // Get BodyType
-            int type;
-            DagHelper::getPlugValue(dagPath.node(), ATTR_BODY_TYPE, type);
-
-            enum bodytype
-            {
-                Static,
-                Kinematic,
-                Dynamic
-            };
-
-            if (type == Kinematic || type == Dynamic)
-                addDynamic(true);
-            else if (type == Static)
-                addDynamic(false);
-
-		//Get Mass
-		float mass;
-		MObject node = dagPath.node();
-
-		if (isBulletRigidBodyNode(dagPath))
+		if (sceneElement->getIsLocal())
 		{
-			DagHelper::getPlugValue(node, ATTR_MASS, mass);
-			addMass(mass);
+			if (firstimeOpenPhysModel)
+			{
+				openPhysicsModel(PHYSICS_MODEL_ID, "");
+
+				PhysicsExporter::RB_Constraint& ConstraintMap = PhysicsExporter::getRB_ConstraintMap();
+				exportPhysicRigidConstraints(ConstraintMap);
+				firstimeOpenPhysModel = false;
+			}
+
+			openRigidBody(colladaMeshId, "");
+			openTechniqueCommon();
+
+			// Get BodyType
+			int type;
+			DagHelper::getPlugValue(dagPath.node(), ATTR_BODY_TYPE, type);
+
+			enum bodytype
+			{
+				Static,
+				Kinematic,
+				Dynamic
+			};
+
+			if (type == Kinematic || type == Dynamic)
+				addDynamic(true);
+			else if (type == Static)
+				addDynamic(false);
+
+			//Get Mass
+			float mass;
+			MObject node = dagPath.node();
+
+			if (isBulletRigidBodyNode(dagPath))
+			{
+				DagHelper::getPlugValue(node, ATTR_MASS, mass);
+				addMass(mass);
+			}
+
+
+			//Get Inertia 
+			MVector inertia(1, 1, 1);
+			//DagHelper::getPlugValue(dagPath.node(), ATTR_INERTIA, inertia);
+			addInertia(inertia.x, inertia.y, inertia.z);
 		}
 
-
-            //Get Inertia 
-            MVector inertia(1, 1, 1);
-            //DagHelper::getPlugValue(dagPath.node(), ATTR_INERTIA, inertia);
-            addInertia(inertia.x, inertia.y, inertia.z);
-        }
-		
 		for (int i = 0; i < DagNode.parentCount(); ++i)
 		{
 			// Parent 1 level upper
 			MObject parent = DagNode.parent(i);
 			MFnDagNode fnParent(parent);
-            MDagPath parentDagPath;
-            fnParent.getPath(parentDagPath);
-            String parentId = mDocumentExporter->dagPathToColladaId(parentDagPath);
+			MDagPath parentDagPath;
+			fnParent.getPath(parentDagPath);
+			String parentId = mDocumentExporter->dagPathToColladaId(parentDagPath);
 
 			bool needExportParent = false;
 			bool resultParent = DagHelper::getPlugValue(parent, ATTR_COLLISION_EXPORT_NODE, needExportParent);
@@ -921,9 +1041,9 @@ namespace COLLADAMaya
 			// Parent 2 level upper
 			MObject parent2 = fnParent.parent(0);
 			MFnDagNode fnParent2(parent2);
-            MDagPath parent2DagPath;
-            fnParent2.getPath(parent2DagPath);
-            String parent2Id = mDocumentExporter->dagPathToColladaId(parent2DagPath);
+			MDagPath parent2DagPath;
+			fnParent2.getPath(parent2DagPath);
+			String parent2Id = mDocumentExporter->dagPathToColladaId(parent2DagPath);
 
 			// Search for Solver, Gravity Field
 			getGravityField();
@@ -957,7 +1077,7 @@ namespace COLLADAMaya
 					MFnDagNode fnChild(child);
 					MString childName;
 					childName = fnChild.name();
-                    const String& colladaBodyId = generateColladaRigidBodyId(ChildPath, sceneElement->getIsLocal());
+					const String& colladaBodyId = generateColladaRigidBodyId(ChildPath, sceneElement->getIsLocal());
 
 					BodyTarget bodyTarget;
 					bodyTarget.Body = colladaBodyId;
@@ -967,16 +1087,16 @@ namespace COLLADAMaya
 					else
 						bodyTarget.Target = String("#") + parentId;
 
-                    String filename = GetRigidBodyReferenceFilename(sceneElement);
+					String filename = GetRigidBodyReferenceFilename(sceneElement);
 
-                    DaeToIRBMap::iterator it = mInstanceRigidBodies.find(filename);
-                    if (it == mInstanceRigidBodies.end()) {
-                        mInstanceRigidBodies[filename] = std::vector<BodyTarget>();
-                    }
+					DaeToIRBMap::iterator it = mInstanceRigidBodies.find(filename);
+					if (it == mInstanceRigidBodies.end()) {
+						mInstanceRigidBodies[filename] = std::vector<BodyTarget>();
+					}
 
-                    mInstanceRigidBodies[filename].push_back(bodyTarget);
+					mInstanceRigidBodies[filename].push_back(bodyTarget);
 				}
-                else if (sceneElement->getIsLocal())
+				else if (sceneElement->getIsLocal())
 				{
 					mTransformObject = ChildPath.transform();
 					MTransformationMatrix mPhysicsShapeTransformMatrix(ChildPath.inclusiveMatrix());
@@ -993,27 +1113,6 @@ namespace COLLADAMaya
 
 		return true;
 	}
-
-    // --------------------------------------------------------
-	bool PhysicsExporter::exportPhysicModel(
-		MDagPath& dagPath)
-    {
-		
-		if (firstimeOpenPhysModel)
-		{
-			openPhysicsModel(PHYSIC_MODEL_ID, "");
-
-			PhysicsExporter::RB_Constraint& ConstraintMap = PhysicsExporter::getRB_ConstraintMap();
-			exportPhysicRigidConstraints(ConstraintMap);
-
-			firstimeOpenPhysModel = false;
-		}
-		
-		exportPhysicRigidBody(dagPath);
-		
-
-		return true;
-    }
 
     // --------------------------------------------------
     void PhysicsExporter::endExport()

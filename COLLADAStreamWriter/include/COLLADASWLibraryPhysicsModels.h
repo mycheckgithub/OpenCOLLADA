@@ -62,8 +62,8 @@ namespace COLLADASW
 		void closeSpring();
 
 		void openLimits();
-		void AddSwingAndTwistLimit(float xMin, float yMin, float zMin, float xMax, float yMax, float zMax);
-		void AddLinearLimit(float xMin, float yMin, float zMin, float xMax, float yMax, float zMax);
+		void AddSwingAndTwistLimit(std::vector<String> minValues, std::vector<String> maxValues);
+		void AddLinearLimit(std::vector<String> minValues, std::vector<String> maxValues);
 		void closeLimits();
 
 		void openRigidBody(const String & rbSId, const String & rbName);

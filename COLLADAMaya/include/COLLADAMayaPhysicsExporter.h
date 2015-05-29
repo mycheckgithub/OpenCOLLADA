@@ -79,14 +79,6 @@ namespace COLLADAMaya
 			Mesh		= 3
 		};
 
-		
-		typedef struct BodyTarget {
-			String Body;
-			String Target;
-		} BodyTarget;
-
-		typedef std::map<String, BodyTarget> RB_Map;
-
 
 		enum ConstraintLimit {
 			Free = 0,
@@ -212,6 +204,9 @@ namespace COLLADAMaya
 		void exportTranslation(const String name, const MPoint& translation);
 		void exportTranslation(const String name, const MVector& translation);
 		void exportRotation(const String name, const MEulerRotation& rotation);
+
+
+		SceneElement* getSceneElementFromDagPath(MDagPath& path);
 
 	private:
 

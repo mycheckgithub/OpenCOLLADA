@@ -131,35 +131,35 @@ namespace COLLADASW
 		mSW->closeElement();
 	}
 
-	void LibraryPhysicsModels::AddSwingAndTwistLimit(float xMin, float yMin, float zMin, float xMax, float yMax, float zMax)
+	void LibraryPhysicsModels::AddSwingAndTwistLimit(std::vector<String> minValues, std::vector<String> maxValues)
 	{
 		mSW->openElement(CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_SWING_TWIST_LIMITS);
-		
+
 		mSW->openElement(CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_SWING_TWIST_MIN);
 		mSW->appendAttribute(CSWC::CSW_ATTRIBUTE_SID, "swing_min");
-		mSW->appendValues(xMin, yMin, zMin);
+		mSW->appendValues(minValues);
 		mSW->closeElement();
-		
+
 		mSW->openElement(CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_SWING_TWIST_MAX);
 		mSW->appendAttribute(CSWC::CSW_ATTRIBUTE_SID, "swing_max");
-		mSW->appendValues(xMax, yMax, zMax);
+		mSW->appendValues(maxValues);
 		mSW->closeElement();
 
 		mSW->closeElement();
 	}
 
-	void LibraryPhysicsModels::AddLinearLimit(float xMin, float yMin, float zMin, float xMax, float yMax, float zMax)
+	void LibraryPhysicsModels::AddLinearLimit(std::vector<String> minValues, std::vector<String> maxValues)
 	{
 		mSW->openElement(CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_LINEAR_LIMITS);
 
 		mSW->openElement(CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_SWING_TWIST_MIN);
 		mSW->appendAttribute(CSWC::CSW_ATTRIBUTE_SID, "linear_min");
-		mSW->appendValues(xMin, yMin, zMin);
+		mSW->appendValues(minValues);
 		mSW->closeElement();
 
 		mSW->openElement(CSWC::CSW_ELEMENT_RIGID_CONSTRAINT_SWING_TWIST_MAX);
 		mSW->appendAttribute(CSWC::CSW_ATTRIBUTE_SID, "linear_max");
-		mSW->appendValues(xMax, yMax, zMax);
+		mSW->appendValues(maxValues);
 		mSW->closeElement();
 
 		mSW->closeElement();

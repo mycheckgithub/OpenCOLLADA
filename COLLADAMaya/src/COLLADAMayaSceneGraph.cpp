@@ -384,7 +384,7 @@ namespace COLLADAMaya
 			MObject child = fnNode.child(i);
 			MFnDependencyNode shaderNode(child, &status);
 			MString shaderNodeTypeName = shaderNode.typeName();
-			if (shaderNodeTypeName == BULLET_PHYSIKS_SOLVER_NODE && ExportOptions::exportPhysics())
+			if ((shaderNodeTypeName == BULLET_PHYSIKS_SOLVER_NODE || shaderNodeTypeName == BULLET_PHYSIKS_CONSTRAINT_NODE) && ExportOptions::exportPhysics())
 				isPhysics = true;
 		}
 

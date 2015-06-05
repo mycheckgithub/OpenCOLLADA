@@ -346,7 +346,7 @@ namespace COLLADAMaya
 		exportTranslation(ATTR_ROTATE_PIVOT_INVERSE, rotatePivot * -1);
 	}
 
-	void PhysicsExporter::createShape(MDagPath& childDagPath, MTransformationMatrix mPhysicsShapeTransformMatrix, MTransformationMatrix mGraphicShapeTransformMatrix)
+	void PhysicsExporter::createShape(MDagPath& rigidBodyDagPath, MDagPath& childDagPath, MTransformationMatrix mPhysicsShapeTransformMatrix, MTransformationMatrix mGraphicShapeTransformMatrix)
 	{
 			MFnDagNode fnChild(mTransformObject);
 			MString childName(fnChild.name());
@@ -434,6 +434,16 @@ namespace COLLADAMaya
 				}
 
 				exportDecomposedTransform();
+
+				// Add Physics Material
+				float friction;
+				DagHelper::getPlugValue(rigidBodyDagPath.node(), ATTR_FRICTION, friction);
+
+				float restitution;
+				DagHelper::getPlugValue(rigidBodyDagPath.node(), ATTR_RESTITUTION, restitution);
+				
+				AddMaterial(friction, friction, restitution);
+
 				closeShape();
 			}
 	}
@@ -974,8 +984,8 @@ namespace COLLADAMaya
 		String meshName = mDocumentExporter->dagPathToColladaName(dagPath);
 
 		// Opens the mesh tag in the collada document
-		MFnDagNode DagNode(dagPath.node());
-		MObject parent = DagNode.parent(0);
+		MFnDagNode DagNodeRigidBody(dagPath.node());
+		MObject parent = DagNodeRigidBody.parent(0);
 		MFnDagNode fnParent(parent);
 		MString parentName = fnParent.name();
 		if (sceneElement->getIsLocal())
@@ -1025,10 +1035,10 @@ namespace COLLADAMaya
 			addInertia(inertia.x, inertia.y, inertia.z);
 		}
 
-		for (int i = 0; i < DagNode.parentCount(); ++i)
+		for (int i = 0; i < DagNodeRigidBody.parentCount(); ++i)
 		{
 			// Parent 1 level upper
-			MObject parent = DagNode.parent(i);
+			MObject parent = DagNodeRigidBody.parent(i);
 			MFnDagNode fnParent(parent);
 			MDagPath parentDagPath;
 			fnParent.getPath(parentDagPath);
@@ -1100,7 +1110,7 @@ namespace COLLADAMaya
 				{
 					mTransformObject = ChildPath.transform();
 					MTransformationMatrix mPhysicsShapeTransformMatrix(ChildPath.inclusiveMatrix());
-					createShape(ChildPath, mPhysicsShapeTransformMatrix, mGraphicShapeTransformMatrix);
+					createShape(dagPath, ChildPath, mPhysicsShapeTransformMatrix, mGraphicShapeTransformMatrix);
 				}
 			}
 		}

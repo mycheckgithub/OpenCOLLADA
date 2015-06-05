@@ -207,7 +207,47 @@ namespace COLLADASW
 		mSW->appendValues(x, y, z);
 		mSW->closeElement();
 	}
+
+	void LibraryPhysicsModels::addDynamicFriction(float dynamicFriction)
+	{
+		mSW->openElement(CSWC::CSW_ELEMENT_RIGID_BODY_DYNAMIC_FRICTION);
+		mSW->appendValues(dynamicFriction);
+		mSW->closeElement();
+	}
+
+	void LibraryPhysicsModels::addStaticFriction(float staticFriction)
+	{
+		mSW->openElement(CSWC::CSW_ELEMENT_RIGID_BODY_STATIC_FRICTION);
+		mSW->appendValues(staticFriction);
+		mSW->closeElement();
+	}
+
+	void LibraryPhysicsModels::addRestitution(float restitution)
+	{
+		mSW->openElement(CSWC::CSW_ELEMENT_RIGID_BODY_RESTITUTION);
+		mSW->appendValues(restitution);
+		mSW->closeElement();
+	}
+
 	
+	void LibraryPhysicsModels::AddMaterial(float staticFriction, float dynamicFriction, float restitution)
+	{
+		mSW->openElement(CSWC::CSW_ELEMENT_RIGID_BODY_PHYSICS_MATERIAL);
+
+		openTechniqueCommon();
+
+		addDynamicFriction(dynamicFriction);
+		addRestitution(restitution);
+		addStaticFriction(staticFriction);
+
+		closeTechniqueCommon();
+
+
+		mSW->closeElement();
+	}
+
+
+
 	void LibraryPhysicsModels::openShape()
 	{
 		mCurrentShapeCloser =  mSW->openElement(CSWC::CSW_ELEMENT_RIGID_BODY_SHAPE);

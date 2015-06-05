@@ -83,6 +83,11 @@ namespace COLLADASW
 		void addMass(float mass);
 		void addInertia(float x, float y, float z);
 
+		void AddMaterial(float staticFriction, float dynamicFriction, float restitution);
+		void addDynamicFriction(float dynamicFriction);
+		void addStaticFriction(float staticFriction);
+		void addRestitution(float retitution);
+
 		void addTranslate(const String &sid, float x, float y, float z) const;
 		void addRotate(const String &sid, double x, double y, double z, double angle) const;
 

@@ -155,6 +155,10 @@ namespace COLLADASW
 	const String CSWC::CSW_ELEMENT_RIGID_BODY_DYNAMIC = "dynamic";
 	const String CSWC::CSW_ELEMENT_RIGID_BODY_MASS = "mass";
 	const String CSWC::CSW_ELEMENT_RIGID_BODY_INERTIA = "inertia";
+	const String CSWC::CSW_ELEMENT_RIGID_BODY_PHYSICS_MATERIAL = "physics_material";
+	const String CSWC::CSW_ELEMENT_RIGID_BODY_DYNAMIC_FRICTION = "dynamic_friction";
+	const String CSWC::CSW_ELEMENT_RIGID_BODY_STATIC_FRICTION = "static_friction";
+	const String CSWC::CSW_ELEMENT_RIGID_BODY_RESTITUTION = "restitution";
 	const String CSWC::CSW_ELEMENT_RIGID_BODY_SHAPE = "shape";
 	const String CSWC::CSW_ELEMENT_RIGID_BODY_SHAPE_BOX = "box";
 	const String CSWC::CSW_ELEMENT_RIGID_BODY_SHAPE_CAPSULE = "capsule";

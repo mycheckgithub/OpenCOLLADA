@@ -323,6 +323,8 @@ namespace COLLADAMaya
 	static const char* ATTR_BODY_TYPE								= "bodyType";
 	static const char* ATTR_DYNAMIC									= "dynamic";
 	static const char* ATTR_INERTIA									= "inertia";
+	static const char* ATTR_FRICTION								= "friction";
+	static const char* ATTR_RESTITUTION								= "restitution";
 	
 	static const char* ATTR_CONSTRAINT_TYPE							= "constraintType";
 	static const char* ATTR_USE_REFERENCE_FRAME						= "useReferenceFrame";
